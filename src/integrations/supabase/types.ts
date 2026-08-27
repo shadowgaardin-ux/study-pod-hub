@@ -14,13 +14,263 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      flashcards: {
+        Row: {
+          back: string
+          created_at: string
+          created_by: string
+          deck_name: string
+          front: string
+          id: string
+          pod_id: string
+        }
+        Insert: {
+          back: string
+          created_at?: string
+          created_by: string
+          deck_name: string
+          front: string
+          id?: string
+          pod_id: string
+        }
+        Update: {
+          back?: string
+          created_at?: string
+          created_by?: string
+          deck_name?: string
+          front?: string
+          id?: string
+          pod_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashcards_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flashcards_pod_id_fkey"
+            columns: ["pod_id"]
+            isOneToOne: false
+            referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          audio_url: string | null
+          created_at: string
+          created_by: string
+          id: string
+          pod_id: string
+          summary: string | null
+          title: string
+          transcript: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          pod_id: string
+          summary?: string | null
+          title: string
+          transcript?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          pod_id?: string
+          summary?: string | null
+          title?: string
+          transcript?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notes_pod_id_fkey"
+            columns: ["pod_id"]
+            isOneToOne: false
+            referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pod_discussions: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          pod_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          pod_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          pod_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pod_discussions_pod_id_fkey"
+            columns: ["pod_id"]
+            isOneToOne: false
+            referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pod_discussions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pod_members: {
+        Row: {
+          id: string
+          joined_at: string
+          pod_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          pod_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          pod_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pod_members_pod_id_fkey"
+            columns: ["pod_id"]
+            isOneToOne: false
+            referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pod_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pods: {
+        Row: {
+          course_code: string
+          created_at: string
+          created_by: string
+          id: string
+          invite_code: string | null
+          name: string
+        }
+        Insert: {
+          course_code?: string
+          created_at?: string
+          created_by: string
+          id?: string
+          invite_code?: string | null
+          name: string
+        }
+        Update: {
+          course_code?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          invite_code?: string | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pods_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string
+          id: string
+          tier: string
+          tier_expires_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string
+          id: string
+          tier?: string
+          tier_expires_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          tier?: string
+          tier_expires_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_pod_admin: {
+        Args: { _pod_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_pod_member: {
+        Args: { _pod_id: string; _user_id: string }
+        Returns: boolean
+      }
+      join_pod_by_code: { Args: { _invite_code: string }; Returns: string }
+      pod_member_profiles: {
+        Args: { _pod_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          joined_at: string
+          role: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
