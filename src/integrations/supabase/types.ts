@@ -146,6 +146,44 @@ export type Database = {
           },
         ]
       }
+      pod_join_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          pod_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          pod_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          pod_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pod_join_requests_pod_id_fkey"
+            columns: ["pod_id"]
+            isOneToOne: false
+            referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pod_members: {
         Row: {
           id: string
@@ -190,24 +228,30 @@ export type Database = {
           course_code: string
           created_at: string
           created_by: string
+          description: string | null
           id: string
           invite_code: string | null
+          is_public: boolean
           name: string
         }
         Insert: {
           course_code?: string
           created_at?: string
           created_by: string
+          description?: string | null
           id?: string
           invite_code?: string | null
+          is_public?: boolean
           name: string
         }
         Update: {
           course_code?: string
           created_at?: string
           created_by?: string
+          description?: string | null
           id?: string
           invite_code?: string | null
+          is_public?: boolean
           name?: string
         }
         Relationships: [
@@ -252,6 +296,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      discover_pods: {
+        Args: { _search?: string }
+        Returns: {
+          course_code: string
+          created_at: string
+          description: string
+          id: string
+          is_public: boolean
+          member_count: number
+          name: string
+          request_status: string
+        }[]
+      }
       is_pod_admin: {
         Args: { _pod_id: string; _user_id: string }
         Returns: boolean
@@ -270,6 +327,10 @@ export type Database = {
           role: string
           user_id: string
         }[]
+      }
+      request_pod_access: {
+        Args: { _message?: string; _pod_id: string }
+        Returns: string
       }
     }
     Enums: {
