@@ -2,12 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, UserPlus } from "lucide-react";
 import { useState } from "react";
 
+import { AiAssistant } from "@/components/ai/ai-assistant";
+import { AudioHub } from "@/components/dashboard/audio-hub";
+import { DiscoverTab } from "@/components/pods/discover-tab";
 import { PodCard } from "@/components/pods/pod-card";
 import { CreatePodDialog, JoinPodDialog } from "@/components/pods/pod-dialogs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
 import { usePods, useUsage } from "@/lib/queries";
 import { UNLIMITED, limitLabel, planFor } from "@/lib/tiers";
