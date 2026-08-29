@@ -18,6 +18,7 @@ import { Route as AuthenticatedPodsRouteImport } from './routes/_authenticated/p
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
+import { Route as OnboardPlanRouteImport } from './routes/onboard/plan'
 import { Route as AuthenticatedPodPodIdRouteImport } from './routes/_authenticated/pod.$podId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -64,6 +65,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardPlanRoute = OnboardPlanRouteImport.update({
+  id: '/onboard/plan',
+  path: '/onboard/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPodPodIdRoute = AuthenticatedPodPodIdRouteImport.update({
   id: '/pod/$podId',
   path: '/pod/$podId',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/pods': typeof AuthenticatedPodsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/onboard/plan': typeof OnboardPlanRoute
   '/auth/': typeof AuthIndexRoute
   '/pod/$podId': typeof AuthenticatedPodPodIdRoute
 }
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/pods': typeof AuthenticatedPodsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/onboard/plan': typeof OnboardPlanRoute
   '/auth': typeof AuthIndexRoute
   '/pod/$podId': typeof AuthenticatedPodPodIdRoute
 }
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/_authenticated/pods': typeof AuthenticatedPodsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/onboard/plan': typeof OnboardPlanRoute
   '/auth/': typeof AuthIndexRoute
   '/_authenticated/pod/$podId': typeof AuthenticatedPodPodIdRoute
 }
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/pods'
     | '/settings'
     | '/auth/callback'
+    | '/onboard/plan'
     | '/auth/'
     | '/pod/$podId'
   fileRoutesByTo: FileRoutesByTo
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/pods'
     | '/settings'
     | '/auth/callback'
+    | '/onboard/plan'
     | '/auth'
     | '/pod/$podId'
   id:
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pods'
     | '/_authenticated/settings'
     | '/auth/callback'
+    | '/onboard/plan'
     | '/auth/'
     | '/_authenticated/pod/$podId'
   fileRoutesById: FileRoutesById
@@ -147,6 +159,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  OnboardPlanRoute: typeof OnboardPlanRoute
   AuthIndexRoute: typeof AuthIndexRoute
 }
 
@@ -215,6 +228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboard/plan': {
+      id: '/onboard/plan'
+      path: '/onboard/plan'
+      fullPath: '/onboard/plan'
+      preLoaderRoute: typeof OnboardPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/pod/$podId': {
       id: '/_authenticated/pod/$podId'
       path: '/pod/$podId'
@@ -249,6 +269,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  OnboardPlanRoute: OnboardPlanRoute,
   AuthIndexRoute: AuthIndexRoute,
 }
 export const routeTree = rootRouteImport
