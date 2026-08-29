@@ -10,11 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
+import { type Tier } from "@/lib/tiers";
 import { supabase } from "@/integrations/supabase/client";
 
 const SKIP_EMAIL_CONFIRMATION = import.meta.env["VITE_SKIP_EMAIL_CONFIRMATION"] === "true";
 
 export const Route = createFileRoute("/auth/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    signup: search["signup"] === true || search["signup"] === "true",
+    plan: (["Free", "Pro", "Max"] as const).includes(search["plan"] as Tier)
+      ? (search["plan"] as Tier)
+      : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Log in or sign up — Study Notes" },
@@ -36,6 +43,7 @@ type View = "auth" | "verify" | "forgot";
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { signup, plan } = Route.useSearch();
   const { session, loading } = useAuth();
   const [view, setView] = useState<View>("auth");
   const [pendingEmail, setPendingEmail] = useState("");
@@ -84,7 +92,7 @@ function AuthPage() {
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, tier: plan ?? "Free" },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -216,7 +224,13 @@ function AuthPage() {
 
           {view === "auth" && (
             <div className="surface p-7">
-              <Tabs defaultValue="login">
+              {plan && (
+                <p className="mb-5 rounded-md bg-accent px-3 py-2 text-center text-sm text-accent-foreground">
+                  You picked the <span className="font-semibold">{plan}</span> plan — create your
+                  account to continue.
+                </p>
+              )}
+              <Tabs defaultValue={signup ? "signup" : "login"}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Log In</TabsTrigger>
                   <TabsTrigger value="signup">Sign Up</TabsTrigger>
