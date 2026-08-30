@@ -2,6 +2,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, BookOpen, MailCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { GoogleButton } from "@/components/google-button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -15,13 +16,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SKIP_EMAIL_CONFIRMATION = import.meta.env["VITE_SKIP_EMAIL_CONFIRMATION"] === "true";
 
+const authSearchSchema = z.object({
+  signup: z.boolean().optional(),
+  plan: z.enum(["Free", "Pro", "Max"] as const).optional(),
+});
+
 export const Route = createFileRoute("/auth/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    signup: search["signup"] === true || search["signup"] === "true",
-    plan: (["Free", "Pro", "Max"] as const).includes(search["plan"] as Tier)
-      ? (search["plan"] as Tier)
-      : undefined,
-  }),
+  validateSearch: authSearchSchema.parse,
   head: () => ({
     meta: [
       { title: "Log in or sign up — Study Notes" },
