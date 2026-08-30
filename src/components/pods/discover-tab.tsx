@@ -32,7 +32,10 @@ export function DiscoverTab() {
   const pods = useQuery({
     queryKey: ["discover-pods", search],
     queryFn: async (): Promise<DiscoverPod[]> => {
-      const { data, error } = await supabase.rpc("discover_pods", { _search: search || undefined });
+      const { data, error } = await supabase.rpc(
+        "discover_pods",
+        search ? { _search: search } : {},
+      );
       if (error) throw error;
       return (data ?? []) as DiscoverPod[];
     },

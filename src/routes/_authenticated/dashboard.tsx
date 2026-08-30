@@ -81,39 +81,64 @@ function DashboardPage() {
         </CardContent>
       </Card>
 
-      <section className="space-y-4">
-        <h2 className="display text-xl font-semibold">Your pods</h2>
-        {pods.isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-32 rounded-xl" />
-            ))}
+      <AudioHub pods={pods.data} userId={user?.id} />
+
+      <Tabs defaultValue="active" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2 sm:w-auto">
+          <TabsTrigger value="active">My Active Pods</TabsTrigger>
+          <TabsTrigger value="discover">Discover & Request Access</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="active" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="display text-xl font-semibold">Your pods</h2>
+            <div className="flex gap-2">
+              <Button onClick={() => setJoinOpen(true)} variant="outline" size="sm">
+                <UserPlus className="size-4" /> Join
+              </Button>
+              <Button onClick={() => setCreateOpen(true)} size="sm">
+                <Plus className="size-4" /> Create
+              </Button>
+            </div>
           </div>
-        ) : pods.data?.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {pods.data.map((pod) => (
-              <PodCard key={pod.id} pod={pod} />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-muted-foreground">
-                No pods yet. Create one for your course, or join with an invite code.
-              </p>
-              <div className="flex gap-2">
-                <Button onClick={() => setCreateOpen(true)}>Create your first pod</Button>
-                <Button variant="outline" onClick={() => setJoinOpen(true)}>
-                  Join a pod
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </section>
+
+          {pods.isLoading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} className="h-32 rounded-xl" />
+              ))}
+            </div>
+          ) : pods.data?.length ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {pods.data.map((pod) => (
+                <PodCard key={pod.id} pod={pod} />
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                <p className="text-muted-foreground">
+                  No pods yet. Create one for your course, or join with an invite code.
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={() => setCreateOpen(true)}>Create your first pod</Button>
+                  <Button variant="outline" onClick={() => setJoinOpen(true)}>
+                    Join a pod
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="discover">
+          <DiscoverTab />
+        </TabsContent>
+      </Tabs>
 
       <CreatePodDialog open={createOpen} onOpenChange={setCreateOpen} userId={user?.id} />
       <JoinPodDialog open={joinOpen} onOpenChange={setJoinOpen} />
+      <AiAssistant />
     </div>
   );
 }
