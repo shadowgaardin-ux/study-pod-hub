@@ -74,3 +74,36 @@ export function planFor(tier: string | null | undefined): TierPlan {
 export function limitLabel(value: number): string {
   return value === UNLIMITED ? "Unlimited" : value.toLocaleString();
 }
+
+export interface SemesterPass {
+  name: string;
+  months: number;
+  price: number;
+  priceLabel: string;
+  perMonthLabel: string;
+  saveLabel: string;
+  tier: Tier;
+}
+
+/** Discounted one-off pass for a full semester of Pro. */
+export const SEMESTER_PASS: SemesterPass = {
+  name: "Semester Pass",
+  months: 3,
+  price: 6000,
+  priceLabel: "₦6,000",
+  perMonthLabel: "₦2,000/mo",
+  saveLabel: "save ₦1,500",
+  tier: "Pro",
+};
+
+export const MAX_SEMESTER_PASS: SemesterPass = {
+  name: "Max Semester Pass",
+  months: 3,
+  price: 12000,
+  priceLabel: "₦12,000",
+  perMonthLabel: "₦4,000/mo",
+  saveLabel: "save ₦3,000",
+  tier: "Max",
+};
+
+export type BillingCycle = "monthly" | "semester";

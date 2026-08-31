@@ -14,7 +14,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+
+const RULES_PLACEHOLDER = "No off-topic posts\nCourse materials only\nBe kind in chat";
 
 export function CreatePodDialog({
   open,
@@ -26,7 +29,8 @@ export function CreatePodDialog({
   userId: string | undefined;
 }) {
   const [name, setName] = useState("");
-  const [courseCode, setCourseCode] = useState("");
+  const [description, setDescription] = useState("");
+  const [rules, setRules] = useState("");
   const [busy, setBusy] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -37,7 +41,12 @@ export function CreatePodDialog({
     setBusy(true);
     const { data, error } = await supabase
       .from("pods")
-      .insert({ name: name.trim(), course_code: courseCode.trim(), created_by: userId })
+      .insert({
+        name: name.trim(),
+        description: description.trim() || null,
+        rules: rules.trim() || null,
+        created_by: userId,
+      })
       .select("id")
       .single();
     setBusy(false);
@@ -47,7 +56,8 @@ export function CreatePodDialog({
     }
     toast.success("Pod created");
     setName("");
-    setCourseCode("");
+    setDescription("");
+    setRules("");
     onOpenChange(false);
     await queryClient.invalidateQueries();
     void navigate({ to: "/pod/$podId", params: { podId: data.id } });
@@ -58,14 +68,14 @@ export function CreatePodDialog({
       <DialogContent>
         <form onSubmit={submit}>
           <DialogHeader>
-            <DialogTitle>Create a study pod</DialogTitle>
+            <DialogTitle className="display">Create a study pod</DialogTitle>
             <DialogDescription>
-              Pods are shared workspaces for a course. You'll get an invite code to share.
+              A shared space for your group. You'll get an invite link to share right after.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="pod-name">Pod name</Label>
+              <Label htmlFor="pod-name">Pod title</Label>
               <Input
                 id="pod-name"
                 value={name}
@@ -75,13 +85,27 @@ export function CreatePodDialog({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="pod-course">Course code</Label>
-              <Input
-                id="pod-course"
-                value={courseCode}
-                onChange={(e) => setCourseCode(e.target.value)}
-                placeholder="CHM 201"
+              <Label htmlFor="pod-description">Short description</Label>
+              <Textarea
+                id="pod-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                placeholder="Weekly revision for second-semester organic chemistry."
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="pod-rules">Group rules / guidelines</Label>
+              <Textarea
+                id="pod-rules"
+                value={rules}
+                onChange={(e) => setRules(e.target.value)}
+                rows={3}
+                placeholder={RULES_PLACEHOLDER}
+              />
+              <p className="text-xs text-muted-foreground">
+                One rule per line — shown pinned at the top of the pod.
+              </p>
             </div>
           </div>
           <DialogFooter>
@@ -130,8 +154,10 @@ export function JoinPodDialog({
       <DialogContent>
         <form onSubmit={submit}>
           <DialogHeader>
-            <DialogTitle>Join a pod</DialogTitle>
-            <DialogDescription>Enter the 6-character invite code from a classmate.</DialogDescription>
+            <DialogTitle className="display">Join a pod</DialogTitle>
+            <DialogDescription>
+              Paste the 6-character invite code from a classmate's link.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-2 py-4">
             <Label htmlFor="invite-code">Invite code</Label>

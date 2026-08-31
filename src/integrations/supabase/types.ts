@@ -22,7 +22,7 @@ export type Database = {
           deck_name: string
           front: string
           id: string
-          pod_id: string
+          pod_id: string | null
         }
         Insert: {
           back: string
@@ -31,7 +31,7 @@ export type Database = {
           deck_name: string
           front: string
           id?: string
-          pod_id: string
+          pod_id?: string | null
         }
         Update: {
           back?: string
@@ -40,7 +40,7 @@ export type Database = {
           deck_name?: string
           front?: string
           id?: string
-          pod_id?: string
+          pod_id?: string | null
         }
         Relationships: [
           {
@@ -65,7 +65,7 @@ export type Database = {
           created_at: string
           created_by: string
           id: string
-          pod_id: string
+          pod_id: string | null
           summary: string | null
           title: string
           transcript: string | null
@@ -75,7 +75,7 @@ export type Database = {
           created_at?: string
           created_by: string
           id?: string
-          pod_id: string
+          pod_id?: string | null
           summary?: string | null
           title: string
           transcript?: string | null
@@ -85,7 +85,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           id?: string
-          pod_id?: string
+          pod_id?: string | null
           summary?: string | null
           title?: string
           transcript?: string | null
@@ -233,6 +233,7 @@ export type Database = {
           invite_code: string | null
           is_public: boolean
           name: string
+          rules: string | null
         }
         Insert: {
           course_code?: string
@@ -243,6 +244,7 @@ export type Database = {
           invite_code?: string | null
           is_public?: boolean
           name: string
+          rules?: string | null
         }
         Update: {
           course_code?: string
@@ -253,6 +255,7 @@ export type Database = {
           invite_code?: string | null
           is_public?: boolean
           name?: string
+          rules?: string | null
         }
         Relationships: [
           {
