@@ -5,7 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 export interface Pod {
   id: string;
   name: string;
-  course_code: string;
+  course_code: string | null;
+  description: string | null;
+  rules: string | null;
+  is_public: boolean | null;
   invite_code: string | null;
   created_by: string;
   created_at: string;

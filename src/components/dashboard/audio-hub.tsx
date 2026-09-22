@@ -14,17 +14,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  COMPRESSED_BITRATE,
+  RECORD_CONSTRAINTS,
+  UPLOAD_ACCEPT,
+  UPLOAD_HINT,
+  assembleSession,
+  bufferChunk,
+  clearSession,
+  formatBytes,
+  formatTimer,
+  listBufferedSessions,
+  pickMimeType,
+  validateUpload,
+} from "@/lib/audio";
 import type { PodWithCount } from "@/lib/queries";
 
-const MAX_BYTES = 50 * 1024 * 1024;
-
-function formatTime(seconds: number) {
-  const m = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = (seconds % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
+const PERSONAL = "personal";
 
 export function AudioHub({
   pods,
@@ -34,16 +40,15 @@ export function AudioHub({
   userId: string | undefined;
 }) {
   const queryClient = useQueryClient();
-  const [podId, setPodId] = useState<string>("");
+  const [target, setTarget] = useState<string>(PERSONAL);
   const [title, setTitle] = useState("");
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [recovered, setRecovered] = useState<{ sessionId: string; size: number } | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const activePod = podId || pods?.[0]?.id || "";
+  const sessionRef = useRef<string>("");
+  const indexRef = useRef(0);
 
   useEffect(() => {
     if (!recording) return;
@@ -51,17 +56,20 @@ export function AudioHub({
     return () => window.clearInterval(id);
   }, [recording]);
 
-  async function saveRecording(blob: Blob, filename: string) {
-    if (!userId || !activePod) {
-      toast.error("Pick a pod to save this recording to");
-      return;
-    }
-    if (blob.size > MAX_BYTES) {
-      toast.error("Recordings must be under 50MB");
-      return;
-    }
+  // A recording interrupted by a reload or network drop is still in IndexedDB.
+  useEffect(() => {
+    void listBufferedSessions().then((sessions) => {
+      const latest = sessions[0];
+      if (latest) setRecovered({ sessionId: latest.sessionId, size: latest.size });
+    });
+  }, []);
+
+  async function saveBlob(blob: Blob, filename: string) {
+    if (!userId) return;
     setBusy(true);
-    const path = `${activePod}/${crypto.randomUUID()}-${filename}`;
+    const podId = target === PERSONAL ? null : target;
+    const folder = podId ?? userId;
+    const path = `${folder}/${crypto.randomUUID()}-${filename}`;
     const { error: uploadError } = await supabase.storage.from("pod-audio").upload(path, blob);
     if (uploadError) {
       setBusy(false);
@@ -69,7 +77,7 @@ export function AudioHub({
       return;
     }
     const { error } = await supabase.from("notes").insert({
-      pod_id: activePod,
+      pod_id: podId,
       created_by: userId,
       title: title.trim() || `Recording ${new Date().toLocaleString()}`,
       audio_url: path,
@@ -79,29 +87,43 @@ export function AudioHub({
       toast.error(error.message);
       return;
     }
-    toast.success("Saved to your pod");
+    toast.success(podId ? "Saved to your pod" : "Saved to your personal library");
     setTitle("");
     await queryClient.invalidateQueries();
   }
 
   async function startRecording() {
-    if (!activePod) {
-      toast.error("Create or join a pod first");
-      return;
-    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      chunksRef.current = [];
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
+      const stream = await navigator.mediaDevices.getUserMedia(RECORD_CONSTRAINTS);
+      const mimeType = pickMimeType();
+      const recorder = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        audioBitsPerSecond: COMPRESSED_BITRATE,
+      });
+      const sessionId = crypto.randomUUID();
+      sessionRef.current = sessionId;
+      indexRef.current = 0;
+      const startedAt = Date.now();
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size === 0) return;
+        void bufferChunk({
+          sessionId,
+          index: indexRef.current++,
+          startedAt,
+          mimeType: recorder.mimeType || "audio/webm",
+          blob: event.data,
+        });
       };
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         stream.getTracks().forEach((track) => track.stop());
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
-        void saveRecording(blob, "lecture.webm");
+        const blob = await assembleSession(sessionId);
+        if (blob) await saveBlob(blob, "lecture.webm");
+        await clearSession(sessionId);
+        setRecovered(null);
       };
-      recorder.start();
+      // 5-second slices so an interruption loses at most a few seconds.
+      recorder.start(5000);
       recorderRef.current = recorder;
       setElapsed(0);
       setRecording(true);
@@ -116,20 +138,34 @@ export function AudioHub({
     setRecording(false);
   }
 
+  async function recoverSession() {
+    if (!recovered) return;
+    const blob = await assembleSession(recovered.sessionId);
+    if (!blob) {
+      setRecovered(null);
+      return;
+    }
+    await saveBlob(blob, "recovered-lecture.webm");
+    await clearSession(recovered.sessionId);
+    setRecovered(null);
+  }
+
   return (
     <Card className="border-primary/25 bg-gradient-to-br from-accent/50 to-background">
       <CardContent className="flex flex-col gap-4 pt-6 lg:flex-row lg:items-end">
         <div className="grow space-y-2">
           <p className="display text-lg font-semibold">Audio capture hub</p>
           <p className="text-sm text-muted-foreground">
-            Record the lecture live or drop in an existing file — it lands in your pod as a note.
+            Record the lecture live or drop in a file. It saves to your private library by default —
+            share it to a pod whenever you're ready.
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
-            <Select value={activePod} onValueChange={setPodId}>
+            <Select value={target} onValueChange={setTarget}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a pod" />
+                <SelectValue placeholder="Save to…" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value={PERSONAL}>My personal library (private)</SelectItem>
                 {(pods ?? []).map((pod) => (
                   <SelectItem key={pod.id} value={pod.id}>
                     {pod.name}
@@ -143,17 +179,39 @@ export function AudioHub({
               placeholder="Recording title (optional)"
             />
           </div>
+          <p className="text-xs text-muted-foreground">{UPLOAD_HINT}</p>
+          {recovered && !recording ? (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-xs">
+              <span>
+                Unfinished recording found ({formatBytes(recovered.size)}) — it survived the
+                interruption.
+              </span>
+              <Button size="sm" variant="secondary" onClick={() => void recoverSession()}>
+                Save it
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  void clearSession(recovered.sessionId);
+                  setRecovered(null);
+                }}
+              >
+                Discard
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
           {recording && (
             <span className="flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive">
               <span className="size-2 animate-pulse rounded-full bg-destructive" />
-              {formatTime(elapsed)}
+              {formatTimer(elapsed)}
             </span>
           )}
           <Button
-            onClick={recording ? stopRecording : startRecording}
+            onClick={recording ? stopRecording : () => void startRecording()}
             disabled={busy}
             variant={recording ? "destructive" : "default"}
             className="gap-2"
@@ -161,25 +219,27 @@ export function AudioHub({
             {recording ? <Square className="size-4" /> : <Mic className="size-4" />}
             {recording ? "Stop" : "Record"}
           </Button>
-          <Button
-            variant="outline"
-            className="gap-2"
-            disabled={busy}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload className="size-4" /> Upload
+          <Button variant="outline" className="gap-2" disabled={busy} asChild>
+            <label className="cursor-pointer">
+              <Upload className="size-4" /> Upload
+              <input
+                type="file"
+                accept={UPLOAD_ACCEPT}
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  const problem = validateUpload(file);
+                  if (problem) {
+                    toast.error(problem);
+                    return;
+                  }
+                  void saveBlob(file, file.name);
+                }}
+              />
+            </label>
           </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="audio/*,.pdf,.ppt,.pptx"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (file) void saveRecording(file, file.name);
-            }}
-          />
         </div>
       </CardContent>
     </Card>

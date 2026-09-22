@@ -11,6 +11,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
+import { GlobalSearch } from "@/components/dashboard/global-search";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +95,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className="lg:pl-60">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-background/85 px-4 backdrop-blur sm:px-6">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-1 items-center gap-2">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation">
@@ -109,6 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </div>
               </SheetContent>
             </Sheet>
+            <GlobalSearch />
           </div>
 
           <div className="flex items-center gap-2">
@@ -116,6 +118,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               {profile?.tier ?? "Free"} plan
             </Badge>
             <ThemeToggle />
+            <Button asChild variant="ghost" size="icon" aria-label="Settings">
+              <Link to="/settings">
+                <Settings className="size-5" />
+              </Link>
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="rounded-full ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
