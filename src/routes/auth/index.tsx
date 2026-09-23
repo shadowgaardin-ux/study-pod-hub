@@ -51,15 +51,24 @@ type View = "auth" | "verify" | "forgot";
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { signup, plan } = Route.useSearch();
+  const { signup, plan, next } = Route.useSearch();
+  const nextPath = safeNext(next);
   const { session, loading } = useAuth();
   const [view, setView] = useState<View>("auth");
   const [pendingEmail, setPendingEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const goAfterAuth = useCallback(() => {
+    if (nextPath) {
+      window.location.href = nextPath;
+      return;
+    }
+    void navigate({ to: "/dashboard", replace: true });
+  }, [nextPath, navigate]);
+
   useEffect(() => {
-    if (!loading && session) void navigate({ to: "/dashboard", replace: true });
-  }, [loading, session, navigate]);
+    if (!loading && session) goAfterAuth();
+  }, [loading, session, goAfterAuth]);
 
   async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,8 +84,9 @@ function AuthPage() {
       return;
     }
     toast.success("Welcome back!");
-    void navigate({ to: "/dashboard", replace: true });
+    goAfterAuth();
   }
+
 
   async function handleSignup(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
