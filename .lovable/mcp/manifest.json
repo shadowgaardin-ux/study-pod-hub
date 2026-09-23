@@ -1,0 +1,274 @@
+{
+  "version": 1,
+  "sdk_version": "3.0.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://qtnfwbsncnbghcrvbuxy.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "study-pods-hub",
+      "version": "0.1.0",
+      "title": "Study Pods Hub"
+    },
+    "tools": [
+      {
+        "name": "list_pods",
+        "title": "List study pods",
+        "description": "List the study pods the signed-in user has joined or created.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_notes",
+        "title": "List notes",
+        "description": "List notes and recordings the signed-in user can read, newest first. Optionally filter to one pod.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "podId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pod id to filter by, or null for all notes."
+            },
+            "limit": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Max notes to return (default 20)."
+            }
+          },
+          "required": [
+            "podId",
+            "limit"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_notes",
+        "title": "Search notes",
+        "description": "Search the signed-in user's readable notes by title, summary or transcript text.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Text to search for."
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_note",
+        "title": "Create a note",
+        "description": "Create a note in the signed-in user's personal library, or inside a pod when a pod id is given.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Note title."
+            },
+            "transcript": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Full note body or transcript, or null."
+            },
+            "summary": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Short summary, or null."
+            },
+            "podId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pod id to save into, or null for personal library."
+            }
+          },
+          "required": [
+            "title",
+            "transcript",
+            "summary",
+            "podId"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_flashcards",
+        "title": "List flashcards",
+        "description": "List flashcards the signed-in user can read, optionally filtered by deck name.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "deckName": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Deck name to filter by, or null for all decks."
+            },
+            "limit": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Max cards to return (default 50)."
+            }
+          },
+          "required": [
+            "deckName",
+            "limit"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_flashcards",
+        "title": "Create flashcards",
+        "description": "Add one or more flashcards to a deck in the signed-in user's library, or inside a pod.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "deckName": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Deck the cards belong to."
+            },
+            "podId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Pod id to save into, or null for personal library."
+            },
+            "cards": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "front": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "back": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "front",
+                  "back"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Cards to create, each with a front and a back."
+            }
+          },
+          "required": [
+            "deckName",
+            "podId",
+            "cards"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
