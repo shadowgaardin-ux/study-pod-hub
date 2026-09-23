@@ -32,8 +32,17 @@ function AuthCallback() {
     const finish = (to: "/dashboard" | "/auth") => {
       if (done) return;
       done = true;
+      if (to === "/dashboard") {
+        const stored = sessionStorage.getItem("study-notes:post-auth-next");
+        sessionStorage.removeItem("study-notes:post-auth-next");
+        if (stored && stored.startsWith("/") && !stored.startsWith("//")) {
+          window.location.replace(stored);
+          return;
+        }
+      }
       void navigate({ to, replace: true });
     };
+
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) finish("/dashboard");

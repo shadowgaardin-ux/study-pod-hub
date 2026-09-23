@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, BookOpen, MailCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -19,7 +19,14 @@ const SKIP_EMAIL_CONFIRMATION = import.meta.env["VITE_SKIP_EMAIL_CONFIRMATION"] 
 const authSearchSchema = z.object({
   signup: z.boolean().optional(),
   plan: z.enum(["Free", "Pro", "Max"] as const).optional(),
+  // Same-origin relative path to return to after signing in (e.g. the app-authorization screen).
+  next: z.string().optional(),
 });
+
+function safeNext(next: string | undefined) {
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
+}
+
 
 export const Route = createFileRoute("/auth/")({
   validateSearch: authSearchSchema.parse,
@@ -44,15 +51,24 @@ type View = "auth" | "verify" | "forgot";
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { signup, plan } = Route.useSearch();
+  const { signup, plan, next } = Route.useSearch();
+  const nextPath = safeNext(next);
   const { session, loading } = useAuth();
   const [view, setView] = useState<View>("auth");
   const [pendingEmail, setPendingEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const goAfterAuth = useCallback(() => {
+    if (nextPath) {
+      window.location.href = nextPath;
+      return;
+    }
+    void navigate({ to: "/dashboard", replace: true });
+  }, [nextPath, navigate]);
+
   useEffect(() => {
-    if (!loading && session) void navigate({ to: "/dashboard", replace: true });
-  }, [loading, session, navigate]);
+    if (!loading && session) goAfterAuth();
+  }, [loading, session, goAfterAuth]);
 
   async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -68,8 +84,9 @@ function AuthPage() {
       return;
     }
     toast.success("Welcome back!");
-    void navigate({ to: "/dashboard", replace: true });
+    goAfterAuth();
   }
+
 
   async function handleSignup(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -117,13 +134,13 @@ function AuthPage() {
       }
       setBusy(false);
       toast.success("Account created", { description: "You're all set — welcome to Study Notes." });
-      void navigate({ to: "/dashboard", replace: true });
+      goAfterAuth();
       return;
     }
 
     setBusy(false);
     if (data.session) {
-      void navigate({ to: "/dashboard", replace: true });
+      goAfterAuth();
       return;
     }
     setPendingEmail(email);
