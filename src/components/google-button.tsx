@@ -4,11 +4,18 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { lovable } from "@/integrations/lovable/index";
 
-export function GoogleButton({ label = "Continue with Google" }: { label?: string }) {
+export function GoogleButton({
+  label = "Continue with Google",
+  next,
+}: {
+  label?: string;
+  next?: string;
+}) {
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
     setLoading(true);
+    if (next) sessionStorage.setItem("study-notes:post-auth-next", next);
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + "/auth/callback",
     });
@@ -21,8 +28,9 @@ export function GoogleButton({ label = "Continue with Google" }: { label?: strin
     if (result.redirected) return;
 
     // Session already set by the helper (preview/popup flow).
-    window.location.href = "/dashboard";
+    window.location.href = next ?? "/dashboard";
   }
+
 
   return (
     <Button type="button" variant="outline" className="w-full" onClick={handleClick} disabled={loading}>
