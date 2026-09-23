@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, BookOpen, MailCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -134,13 +134,13 @@ function AuthPage() {
       }
       setBusy(false);
       toast.success("Account created", { description: "You're all set — welcome to Study Notes." });
-      void navigate({ to: "/dashboard", replace: true });
+      goAfterAuth();
       return;
     }
 
     setBusy(false);
     if (data.session) {
-      void navigate({ to: "/dashboard", replace: true });
+      goAfterAuth();
       return;
     }
     setPendingEmail(email);
