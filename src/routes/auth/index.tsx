@@ -19,7 +19,14 @@ const SKIP_EMAIL_CONFIRMATION = import.meta.env["VITE_SKIP_EMAIL_CONFIRMATION"] 
 const authSearchSchema = z.object({
   signup: z.boolean().optional(),
   plan: z.enum(["Free", "Pro", "Max"] as const).optional(),
+  // Same-origin relative path to return to after signing in (e.g. the app-authorization screen).
+  next: z.string().optional(),
 });
+
+function safeNext(next: string | undefined) {
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
+}
+
 
 export const Route = createFileRoute("/auth/")({
   validateSearch: authSearchSchema.parse,
