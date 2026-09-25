@@ -9,7 +9,7 @@ export function GoogleButton({
   next,
 }: {
   label?: string;
-  next?: string;
+  next?: string | undefined;
 }) {
   const [loading, setLoading] = useState(false);
 
