@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { AiAssistant } from "@/components/ai/ai-assistant";
 import { AudioHub } from "@/components/dashboard/audio-hub";
+import { PersonalLibrary } from "@/components/dashboard/personal-library";
 import { DiscoverTab } from "@/components/pods/discover-tab";
 import { PodCard } from "@/components/pods/pod-card";
 import { CreatePodDialog, JoinPodDialog } from "@/components/pods/pod-dialogs";
@@ -84,10 +85,15 @@ function DashboardPage() {
       <AudioHub pods={pods.data} userId={user?.id} />
 
       <Tabs defaultValue="active" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 sm:w-auto">
+        <TabsList className="grid w-full grid-cols-3 sm:w-auto">
           <TabsTrigger value="active">My Active Pods</TabsTrigger>
-          <TabsTrigger value="discover">Discover & Request Access</TabsTrigger>
+          <TabsTrigger value="library">Personal Library</TabsTrigger>
+          <TabsTrigger value="discover">Discover</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="library">
+          <PersonalLibrary userId={user?.id} pods={pods.data} />
+        </TabsContent>
 
         <TabsContent value="active" className="space-y-4">
           <div className="flex items-center justify-between">
