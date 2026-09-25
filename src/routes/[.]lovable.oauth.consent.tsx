@@ -5,6 +5,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
+interface AuthorizationDetails {
+  client?: { name?: string } | undefined;
+  redirect_url?: string | undefined;
+  redirect_to?: string | undefined;
+}
+
+
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   // Browser-only: the Supabase session lives in browser storage.
   ssr: false,
@@ -23,10 +30,12 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     const authorizationId = new URLSearchParams(location.search).get("authorization_id")!;
     const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
     if (error) throw error;
-    const immediate = data?.redirect_url ?? data?.redirect_to;
-    if (immediate && !data?.client) throw redirect({ href: immediate });
-    return data;
+    const details = data as AuthorizationDetails | null;
+    const immediate = details?.redirect_url ?? details?.redirect_to;
+    if (immediate && !details?.client) throw redirect({ href: immediate });
+    return details;
   },
+
   head: () => ({
     meta: [
       { title: "Authorize an app — Study Notes" },
@@ -67,7 +76,8 @@ function Consent() {
       setError(decisionError.message);
       return;
     }
-    const target = data?.redirect_url ?? data?.redirect_to;
+    const decision = data as AuthorizationDetails | null;
+    const target = decision?.redirect_url ?? decision?.redirect_to;
     if (!target) {
       setBusy(false);
       setError("No redirect was returned. Please try again.");

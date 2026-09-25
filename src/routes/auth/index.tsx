@@ -284,7 +284,7 @@ function AuthPage() {
                     </Button>
                   </form>
                   <Divider />
-                  <GoogleButton label="Log in with Google" />
+                  <GoogleButton label="Log in with Google" next={nextPath} />
                 </TabsContent>
 
                 <TabsContent value="signup" className="mt-6">
@@ -322,7 +322,7 @@ function AuthPage() {
                     </Button>
                   </form>
                   <Divider />
-                  <GoogleButton label="Sign up with Google" />
+                  <GoogleButton label="Sign up with Google" next={nextPath} />
                 </TabsContent>
               </Tabs>
             </div>
