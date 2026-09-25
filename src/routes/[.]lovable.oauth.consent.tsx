@@ -5,6 +5,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
+interface AuthorizationDetails {
+  client?: { name?: string } | undefined;
+  redirect_url?: string | undefined;
+  redirect_to?: string | undefined;
+}
+
+
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   // Browser-only: the Supabase session lives in browser storage.
   ssr: false,
