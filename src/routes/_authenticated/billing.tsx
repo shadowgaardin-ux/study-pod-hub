@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
-import { TIER_ORDER, TIER_PLANS, planFor } from "@/lib/tiers";
+import { MAX_SEMESTER_PASS, SEMESTER_PASS, TIER_ORDER, TIER_PLANS, planFor } from "@/lib/tiers";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({
@@ -88,6 +88,35 @@ function BillingPage() {
             </Card>
           );
         })}
+      </div>
+
+      <div>
+        <h2 className="display text-xl font-semibold">Semester Passes</h2>
+        <p className="text-sm text-muted-foreground">Pay once for 3 months and save.</p>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {[SEMESTER_PASS, MAX_SEMESTER_PASS].map((pass) => (
+          <Card key={pass.name} className="border-primary/40 bg-primary/5">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="display text-xl">{pass.name}</CardTitle>
+                <Badge>{pass.saveLabel}</Badge>
+              </div>
+              <CardDescription>
+                {pass.tier} features for {pass.months} months · {pass.perMonthLabel}
+              </CardDescription>
+              <p className="pt-2 text-3xl font-semibold">
+                {pass.priceLabel}
+                <span className="text-sm font-normal text-muted-foreground"> once</span>
+              </p>
+            </CardHeader>
+            <CardFooter>
+              <Button className="w-full" onClick={() => handleUpgrade(pass.name)}>
+                Get {pass.name}
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );
