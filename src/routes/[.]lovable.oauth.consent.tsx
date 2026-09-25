@@ -76,7 +76,8 @@ function Consent() {
       setError(decisionError.message);
       return;
     }
-    const target = data?.redirect_url ?? data?.redirect_to;
+    const decision = data as AuthorizationDetails | null;
+    const target = decision?.redirect_url ?? decision?.redirect_to;
     if (!target) {
       setBusy(false);
       setError("No redirect was returned. Please try again.");
