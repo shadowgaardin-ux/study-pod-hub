@@ -23,10 +23,12 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     const authorizationId = new URLSearchParams(location.search).get("authorization_id")!;
     const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
     if (error) throw error;
-    const immediate = data?.redirect_url ?? data?.redirect_to;
-    if (immediate && !data?.client) throw redirect({ href: immediate });
-    return data;
+    const details = data as AuthorizationDetails | null;
+    const immediate = details?.redirect_url ?? details?.redirect_to;
+    if (immediate && !details?.client) throw redirect({ href: immediate });
+    return details;
   },
+
   head: () => ({
     meta: [
       { title: "Authorize an app — Study Notes" },
