@@ -57,7 +57,7 @@ function FlipCard({
   card: Flashcard;
   canDelete: boolean;
   onDelete: () => void;
-  rating?: Rating;
+  rating?: Rating | undefined;
   onRate: (r: Rating) => void;
 }) {
   const [flipped, setFlipped] = useState(false);
@@ -149,7 +149,7 @@ export function FlashcardsTab({ podId, userId }: { podId: string; userId: string
     const { error } = await supabase
       .from("flashcard_reviews")
       .upsert({ card_id: cardId, user_id: userId, rating, due_at: due }, { onConflict: "card_id,user_id" });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     await queryClient.invalidateQueries({ queryKey: ["flashcard_reviews", userId] });
   }
 
