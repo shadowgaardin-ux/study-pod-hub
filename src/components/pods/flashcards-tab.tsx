@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, RotateCw, Trash2 } from "lucide-react";
+import { Download, Plus, RotateCw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -30,14 +30,35 @@ export interface Flashcard {
   created_at: string;
 }
 
+type Rating = "easy" | "medium" | "hard";
+const INTERVAL_DAYS: Record<Rating, number> = { hard: 0.007, medium: 1, easy: 4 };
+
+function exportCards(cards: Flashcard[], kind: "txt" | "csv", name: string) {
+  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const body =
+    kind === "csv"
+      ? ["front,back,deck", ...cards.map((c) => [c.front, c.back, c.deck_name].map(esc).join(","))].join("\n")
+      : cards.map((c) => `${c.front.replace(/[\t\n]/g, " ")}\t${c.back.replace(/[\t\n]/g, " ")}`).join("\n");
+  const blob = new Blob([body], { type: kind === "csv" ? "text/csv" : "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${name.replace(/[^a-z0-9]+/gi, "-")}.${kind}`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 function FlipCard({
   card,
   canDelete,
   onDelete,
+  rating,
+  onRate,
 }: {
   card: Flashcard;
   canDelete: boolean;
   onDelete: () => void;
+  rating?: Rating;
+  onRate: (r: Rating) => void;
 }) {
   const [flipped, setFlipped] = useState(false);
   return (
@@ -66,6 +87,23 @@ function FlipCard({
             </button>
           ) : null}
         </div>
+        {flipped ? (
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            {(["hard", "medium", "easy"] as Rating[]).map((r) => (
+              <Button
+                key={r}
+                size="sm"
+                variant={rating === r ? "default" : "outline"}
+                className="flex-1 capitalize"
+                onClick={() => { onRate(r); setFlipped(false); }}
+              >
+                {r}
+              </Button>
+            ))}
+          </div>
+        ) : rating ? (
+          <Badge variant="secondary" className="w-fit capitalize">Mastery: {rating}</Badge>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -92,8 +130,38 @@ export function FlashcardsTab({ podId, userId }: { podId: string; userId: string
     },
   });
 
+  const [dueOnly, setDueOnly] = useState(false);
+  const reviews = useQuery({
+    queryKey: ["flashcard_reviews", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("flashcard_reviews")
+        .select("card_id, rating, due_at");
+      if (error) throw error;
+      return new Map((data ?? []).map((r) => [r.card_id, r as { rating: Rating; due_at: string }]));
+    },
+  });
+
+  async function rate(cardId: string, rating: Rating) {
+    if (!userId) return;
+    const due = new Date(Date.now() + INTERVAL_DAYS[rating] * 86400000).toISOString();
+    const { error } = await supabase
+      .from("flashcard_reviews")
+      .upsert({ card_id: cardId, user_id: userId, rating, due_at: due }, { onConflict: "card_id,user_id" });
+    if (error) return toast.error(error.message);
+    await queryClient.invalidateQueries({ queryKey: ["flashcard_reviews", userId] });
+  }
+
+  const now = Date.now();
+  const isDue = (id: string) => {
+    const r = reviews.data?.get(id);
+    return !r || new Date(r.due_at).getTime() <= now;
+  };
+  const dueCount = (cards.data ?? []).filter((c) => isDue(c.id)).length;
+
   const decks = new Map<string, Flashcard[]>();
-  for (const card of cards.data ?? []) {
+  for (const card of (cards.data ?? []).filter((c) => !dueOnly || isDue(c.id))) {
     const list = decks.get(card.deck_name) ?? [];
     list.push(card);
     decks.set(card.deck_name, list);
@@ -133,7 +201,16 @@ export function FlashcardsTab({ podId, userId }: { podId: string; userId: string
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Button variant={dueOnly ? "default" : "outline"} onClick={() => setDueOnly((v) => !v)}>
+          Study due ({dueCount})
+        </Button>
+        <Button variant="outline" disabled={!cards.data?.length} onClick={() => exportCards(cards.data ?? [], "txt", "flashcards-anki")}>
+          <Download className="size-4" /> Anki (.txt)
+        </Button>
+        <Button variant="outline" disabled={!cards.data?.length} onClick={() => exportCards(cards.data ?? [], "csv", "flashcards-quizlet")}>
+          <Download className="size-4" /> Quizlet (.csv)
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -202,6 +279,8 @@ export function FlashcardsTab({ podId, userId }: { podId: string; userId: string
                   card={card}
                   canDelete={card.created_by === userId}
                   onDelete={() => void remove(card.id)}
+                  rating={reviews.data?.get(card.id)?.rating}
+                  onRate={(r) => void rate(card.id, r)}
                 />
               ))}
             </div>
