@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      flashcard_reviews: {
+        Row: {
+          card_id: string
+          created_at: string
+          due_at: string
+          id: string
+          rating: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          due_at?: string
+          id?: string
+          rating: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          due_at?: string
+          id?: string
+          rating?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashcard_reviews_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "flashcards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flashcards: {
         Row: {
           back: string
