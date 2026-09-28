@@ -1,7 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, FileAudio, Plus, Trash2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Download, FileAudio, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { transcribeNote } from "@/lib/transcribe.functions";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +46,9 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
   const [transcript, setTranscript] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [playerUrls, setPlayerUrls] = useState<Record<string, string>>({});
+  const [transcribingId, setTranscribingId] = useState<string | null>(null);
+  const runTranscribe = useServerFn(transcribeNote);
 
   const notes = useQuery({
     queryKey: ["notes", podId],
@@ -99,13 +105,35 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
     await queryClient.invalidateQueries({ queryKey: ["notes", podId] });
   }
 
-  async function playAudio(path: string) {
+  async function togglePlayer(noteId: string, path: string) {
+    if (playerUrls[noteId]) {
+      setPlayerUrls((prev) => {
+        const next = { ...prev };
+        delete next[noteId];
+        return next;
+      });
+      return;
+    }
     const { data, error } = await supabase.storage.from("pod-audio").createSignedUrl(path, 3600);
     if (error || !data) {
       toast.error("Could not open audio");
       return;
     }
-    window.open(data.signedUrl, "_blank", "noopener");
+    setPlayerUrls((prev) => ({ ...prev, [noteId]: data.signedUrl }));
+  }
+
+  async function transcribe(note: Note) {
+    if (!note.audio_url) return;
+    setTranscribingId(note.id);
+    try {
+      await runTranscribe({ data: { noteId: note.id, audioPath: note.audio_url } });
+      toast.success("Transcript ready");
+      await queryClient.invalidateQueries({ queryKey: ["notes", podId] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Transcription failed");
+    } finally {
+      setTranscribingId(null);
+    }
   }
 
   async function remove(id: string) {
@@ -188,14 +216,29 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
                   </div>
                   <div className="flex gap-1">
                     {note.audio_url ? (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label="Open audio"
-                        onClick={() => void playAudio(note.audio_url!)}
-                      >
-                        <FileAudio className="size-4" />
-                      </Button>
+                      <>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Play audio"
+                          onClick={() => void togglePlayer(note.id, note.audio_url!)}
+                        >
+                          <FileAudio className="size-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Transcribe audio"
+                          disabled={transcribingId === note.id}
+                          onClick={() => void transcribe(note)}
+                        >
+                          {transcribingId === note.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <Sparkles className="size-4" />
+                          )}
+                        </Button>
+                      </>
                     ) : null}
                     {note.created_by === userId ? (
                       <Button
@@ -210,6 +253,12 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
                   </div>
                 </div>
               </CardHeader>
+              {playerUrls[note.id] ? (
+                <CardContent className="pb-2">
+                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                  <audio controls src={playerUrls[note.id]} className="w-full" />
+                </CardContent>
+              ) : null}
               {note.transcript ? (
                 <CardContent className="whitespace-pre-wrap text-sm text-muted-foreground">
                   {note.transcript}
