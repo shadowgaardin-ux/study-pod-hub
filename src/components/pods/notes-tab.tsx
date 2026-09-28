@@ -253,6 +253,12 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
                   </div>
                 </div>
               </CardHeader>
+              {playerUrls[note.id] ? (
+                <CardContent className="pb-2">
+                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                  <audio controls src={playerUrls[note.id]} className="w-full" />
+                </CardContent>
+              ) : null}
               {note.transcript ? (
                 <CardContent className="whitespace-pre-wrap text-sm text-muted-foreground">
                   {note.transcript}
