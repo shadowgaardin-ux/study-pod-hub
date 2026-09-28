@@ -1,7 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, FileAudio, Plus, Trash2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Download, FileAudio, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { transcribeNote } from "@/lib/transcribe.functions";
 
 import { Button } from "@/components/ui/button";
 import {
