@@ -216,14 +216,29 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
                   </div>
                   <div className="flex gap-1">
                     {note.audio_url ? (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label="Open audio"
-                        onClick={() => void playAudio(note.audio_url!)}
-                      >
-                        <FileAudio className="size-4" />
-                      </Button>
+                      <>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Play audio"
+                          onClick={() => void togglePlayer(note.id, note.audio_url!)}
+                        >
+                          <FileAudio className="size-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Transcribe audio"
+                          disabled={transcribingId === note.id}
+                          onClick={() => void transcribe(note)}
+                        >
+                          {transcribingId === note.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <Sparkles className="size-4" />
+                          )}
+                        </Button>
+                      </>
                     ) : null}
                     {note.created_by === userId ? (
                       <Button
