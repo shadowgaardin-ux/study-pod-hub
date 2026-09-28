@@ -1,0 +1,1 @@
+CREATE POLICY pods_select_creator ON public.pods FOR SELECT TO authenticated USING (created_by = auth.uid());
