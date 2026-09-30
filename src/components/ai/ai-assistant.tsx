@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { HelpCircle, KeyRound, List, Sparkles } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { studyAction } from "@/lib/ai.functions";
+import { HelpCircle, KeyRound, List, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -35,45 +38,13 @@ const ACTIONS: { key: Action; label: string; icon: typeof List }[] = [
   { key: "quiz", label: "Create quiz questions", icon: HelpCircle },
 ];
 
-const STOP_WORDS = new Set(
-  "the a an and or of to in for on with is are was were be been that this these those it its as by from at".split(
-    " ",
-  ),
-);
-
-function sentencesOf(text: string) {
-  return text
-    .split(/(?<=[.!?])\s+|\n+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 20);
-}
-
-// TODO: swap this local heuristic for a server function backed by the AI gateway.
-function runAction(action: Action, text: string): string[] {
-  const sentences = sentencesOf(text);
-  if (action === "bullets") {
-    return sentences.slice(0, 6).map((s) => (s.length > 160 ? `${s.slice(0, 157)}…` : s));
-  }
-  if (action === "terms") {
-    const counts = new Map<string, number>();
-    for (const word of text.toLowerCase().match(/[a-z][a-z-]{3,}/g) ?? []) {
-      if (STOP_WORDS.has(word)) continue;
-      counts.set(word, (counts.get(word) ?? 0) + 1);
-    }
-    return [...counts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([word, n]) => `${word} — mentioned ${n}×`);
-  }
-  return sentences
-    .slice(0, 5)
-    .map((s, i) => `Q${i + 1}. ${s.replace(/\.$/, "")}? — review this point in your notes.`);
-}
-
 export function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [noteId, setNoteId] = useState("");
   const [action, setAction] = useState<Action | null>(null);
+  const [results, setResults] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const runAi = useServerFn(studyAction);
 
   const notes = useQuery({
     queryKey: ["ai-source-notes"],
@@ -91,7 +62,21 @@ export function AiAssistant() {
 
   const note = notes.data?.find((n) => n.id === noteId);
   const source = [note?.summary, note?.transcript].filter(Boolean).join("\n\n");
-  const results = action && source ? runAction(action, source) : [];
+
+  async function run(key: Action) {
+    setAction(key);
+    setResults([]);
+    if (!source) return;
+    setBusy(true);
+    try {
+      const res = await runAi({ data: { action: key, text: source.slice(0, 60000) } });
+      setResults(res.items);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI request failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <>
@@ -119,7 +104,7 @@ export function AiAssistant() {
             {notes.isLoading ? (
               <Skeleton className="h-10 rounded-md" />
             ) : (
-              <Select value={noteId} onValueChange={setNoteId}>
+              <Select value={noteId} onValueChange={(v) => { setNoteId(v); setResults([]); setAction(null); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a recording or note" />
                 </SelectTrigger>
@@ -139,10 +124,10 @@ export function AiAssistant() {
                   key={key}
                   variant={action === key ? "default" : "outline"}
                   className="justify-start gap-2"
-                  disabled={!note}
-                  onClick={() => setAction(key)}
+                  disabled={!note || busy}
+                  onClick={() => void run(key)}
                 >
-                  <Icon className="size-4" /> {label}
+                  {busy && action === key ? <Loader2 className="size-4 animate-spin" /> : <Icon className="size-4" />} {label}
                 </Button>
               ))}
             </div>

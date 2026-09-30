@@ -75,7 +75,7 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
         toast.error("Audio files must be under 50MB");
         return;
       }
-      const path = `${podId}/${crypto.randomUUID()}-${file.name}`;
+      const path = `${userId}/${podId}/${crypto.randomUUID()}-${file.name}`;
       const { error: uploadError } = await supabase.storage.from("pod-audio").upload(path, file);
       if (uploadError) {
         setBusy(false);
