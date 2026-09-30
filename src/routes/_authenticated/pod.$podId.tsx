@@ -154,7 +154,7 @@ function PodWorkspacePage() {
           <FlashcardsTab podId={podId} userId={user?.id} />
         </TabsContent>
         <TabsContent value="quizzes">
-          <QuizzesTab />
+          <QuizzesTab podId={podId} />
         </TabsContent>
         <TabsContent value="chat">
           <ChatTab podId={podId} userId={user?.id} />
