@@ -34,7 +34,11 @@ const AuthContext = createContext<AuthContextValue>({
 
 async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-  return (data as Profile) ?? null;
+  const profile = (data as Profile) ?? null;
+  if (profile && profile.tier !== "Free" && profile.tier_expires_at && new Date(profile.tier_expires_at) < new Date()) {
+    return { ...profile, tier: "Free" };
+  }
+  return profile;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
