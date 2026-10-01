@@ -52,7 +52,7 @@ type View = "auth" | "verify" | "forgot";
 function AuthPage() {
   const navigate = useNavigate();
   const { signup, plan, next } = Route.useSearch();
-  const nextPath = safeNext(next);
+  const nextPath = safeNext(next) ?? (plan && plan !== "Free" ? "/billing" : undefined);
   const { session, loading } = useAuth();
   const [view, setView] = useState<View>("auth");
   const [pendingEmail, setPendingEmail] = useState("");
@@ -245,7 +245,7 @@ function AuthPage() {
               {plan && (
                 <p className="mb-5 rounded-md bg-accent px-3 py-2 text-center text-sm text-accent-foreground">
                   You picked the <span className="font-semibold">{plan}</span> plan — create your
-                  account to continue.
+                  account, then pay on the next screen.
                 </p>
               )}
               <Tabs defaultValue={signup ? "signup" : "login"}>
