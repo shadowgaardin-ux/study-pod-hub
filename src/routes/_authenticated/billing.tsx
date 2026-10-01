@@ -1,5 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useRef, useState } from "react";
+import { z } from "zod";
+import { confirmPayment, startCheckout } from "@/lib/payments.functions";
+import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -24,16 +28,51 @@ export const Route = createFileRoute("/_authenticated/billing")({
       { property: "og:description", content: "Manage your Study Notes plan and upgrade for more pods." },
     ],
   }),
+  validateSearch: z.object({ reference: z.string().optional(), trxref: z.string().optional() }),
   component: BillingPage,
 });
 
 function BillingPage() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const current = planFor(profile?.tier);
+  const search = Route.useSearch();
+  const navigate = useNavigate();
+  const checkout = useServerFn(startCheckout);
+  const confirm = useServerFn(confirmPayment);
+  const [pending, setPending] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const handled = useRef(false);
 
-  // TODO: wire up a payment provider (Paystack/Stripe) checkout session here.
-  function handleUpgrade(tier: string) {
-    toast.info(`Payments coming soon — ${tier} checkout is not connected yet.`);
+  const reference = search.reference ?? search.trxref;
+  useEffect(() => {
+    if (!reference || handled.current) return;
+    handled.current = true;
+    setConfirming(true);
+    confirm({ data: { reference } })
+      .then(async (res) => {
+        if (res.ok) {
+          toast.success(`Payment confirmed — you're on ${res.tier}!`);
+          await refreshProfile();
+        } else {
+          toast.error("Payment was not completed.");
+        }
+      })
+      .catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not confirm payment"))
+      .finally(() => {
+        setConfirming(false);
+        void navigate({ to: "/billing", search: {}, replace: true });
+      });
+  }, [reference, confirm, refreshProfile, navigate]);
+
+  async function handleUpgrade(item: "pro_monthly" | "max_monthly" | "pro_semester" | "max_semester") {
+    setPending(item);
+    try {
+      const { url } = await checkout({ data: { item } });
+      window.location.href = url;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not start checkout");
+      setPending(null);
+    }
   }
 
   return (
@@ -46,6 +85,11 @@ function BillingPage() {
             ? ` Renews ${new Date(profile.tier_expires_at).toLocaleDateString()}.`
             : ""}
         </p>
+        {confirming ? (
+          <p className="mt-2 flex items-center gap-2 text-sm text-primary">
+            <Loader2 className="size-4 animate-spin" /> Confirming your payment…
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -79,10 +123,11 @@ function BillingPage() {
                 <Button
                   className="w-full"
                   variant={isCurrent ? "outline" : plan.recommended ? "default" : "secondary"}
-                  disabled={isCurrent}
-                  onClick={() => handleUpgrade(plan.tier)}
+                  disabled={isCurrent || plan.tier === "Free" || pending !== null}
+                  onClick={() => void handleUpgrade(plan.tier === "Max" ? "max_monthly" : "pro_monthly")}
                 >
-                  {isCurrent ? "Current plan" : `Upgrade to ${plan.tier}`}
+                  {pending === (plan.tier === "Max" ? "max_monthly" : "pro_monthly") ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {isCurrent ? "Current plan" : plan.tier === "Free" ? "Free forever" : current.tier !== "Free" ? `Switch to ${plan.tier}` : `Upgrade to ${plan.tier}`}
                 </Button>
               </CardFooter>
             </Card>
@@ -111,7 +156,12 @@ function BillingPage() {
               </p>
             </CardHeader>
             <CardFooter>
-              <Button className="w-full" onClick={() => handleUpgrade(pass.name)}>
+              <Button
+                className="w-full"
+                disabled={pending !== null}
+                onClick={() => void handleUpgrade(pass.tier === "Max" ? "max_semester" : "pro_semester")}
+              >
+                {pending === (pass.tier === "Max" ? "max_semester" : "pro_semester") ? <Loader2 className="size-4 animate-spin" /> : null}
                 Get {pass.name}
               </Button>
             </CardFooter>

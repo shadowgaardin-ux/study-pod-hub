@@ -145,6 +145,42 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          item: string
+          months: number
+          reference: string
+          status: string
+          tier: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          item: string
+          months: number
+          reference: string
+          status?: string
+          tier: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          item?: string
+          months?: number
+          reference?: string
+          status?: string
+          tier?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pod_discussions: {
         Row: {
           created_at: string
