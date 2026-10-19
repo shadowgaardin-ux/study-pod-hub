@@ -102,18 +102,50 @@ export function PersonalLibrary({
               {note.summary ? (
                 <p className="line-clamp-3 text-sm text-muted-foreground">{note.summary}</p>
               ) : null}
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-auto w-full gap-2"
-                disabled={!pods?.length}
-                onClick={() => {
-                  setSharing(note);
-                  setPodId(pods?.[0]?.id ?? "");
-                }}
-              >
-                <Share2 className="size-4" /> Share to pod
-              </Button>
+              <div className="mt-auto flex flex-col gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full gap-2"
+                  disabled={!pods?.length}
+                  onClick={() => {
+                    setSharing(note);
+                    setPodId(pods?.[0]?.id ?? "");
+                  }}
+                >
+                  <Share2 className="size-4" /> Share to pod
+                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1 gap-1.5"
+                    disabled={!note.transcript && !note.summary}
+                    onClick={() => exportNoteTxt(note)}
+                  >
+                    <FileText className="size-3.5" /> TXT
+                  </Button>
+                  {plan.exports.includes("pdf") ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="flex-1 gap-1.5"
+                      disabled={!note.transcript && !note.summary}
+                      onClick={() => exportNotePdf(note)}
+                    >
+                      <Download className="size-3.5" /> PDF
+                    </Button>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1 gap-1.5 text-destructive hover:text-destructive"
+                    onClick={() => void remove(note)}
+                  >
+                    <Trash2 className="size-3.5" /> Delete
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ))}
