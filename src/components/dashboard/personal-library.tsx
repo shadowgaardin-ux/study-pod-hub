@@ -39,9 +39,21 @@ export function PersonalLibrary({
 }) {
   const notes = usePersonalNotes(userId);
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const plan = planFor(profile?.tier);
   const [sharing, setSharing] = useState<LibraryNote | null>(null);
   const [podId, setPodId] = useState("");
   const [busy, setBusy] = useState(false);
+
+  async function remove(note: LibraryNote) {
+    const { error } = await supabase.from("notes").delete().eq("id", note.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Recording deleted");
+    await queryClient.invalidateQueries();
+  }
 
   async function share() {
     if (!sharing || !podId) return;
