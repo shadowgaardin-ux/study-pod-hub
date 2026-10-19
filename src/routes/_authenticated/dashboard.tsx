@@ -79,10 +79,11 @@ function DashboardPage() {
         <CardHeader className="pb-3">
           <CardTitle className="display text-lg">{plan.tier} plan usage</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-6 sm:grid-cols-3">
+        <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <Meter label="Pods" used={usage.data?.pods ?? 0} limit={plan.maxPods} />
           <Meter label="Notes" used={usage.data?.notes ?? 0} limit={plan.maxNotes} />
           <Meter label="Flashcards" used={usage.data?.flashcards ?? 0} limit={plan.maxFlashcards} />
+          <Meter label="Recordings" used={usage.data?.recordings ?? 0} limit={plan.maxRecordings} />
         </CardContent>
       </Card>
 
