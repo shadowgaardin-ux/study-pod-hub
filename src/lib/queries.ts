@@ -74,7 +74,7 @@ export function useUsage(userId: string | undefined) {
     queryKey: ["usage", userId],
     enabled: Boolean(userId),
     queryFn: async () => {
-      const [pods, notes, cards] = await Promise.all([
+      const [pods, notes, cards, recordings] = await Promise.all([
         supabase.from("pod_members").select("id", { count: "exact", head: true }),
         supabase
           .from("notes")
@@ -84,11 +84,17 @@ export function useUsage(userId: string | undefined) {
           .from("flashcards")
           .select("id", { count: "exact", head: true })
           .eq("created_by", userId!),
+        supabase
+          .from("notes")
+          .select("id", { count: "exact", head: true })
+          .eq("created_by", userId!)
+          .not("audio_url", "is", null),
       ]);
       return {
         pods: pods.count ?? 0,
         notes: notes.count ?? 0,
         flashcards: cards.count ?? 0,
+        recordings: recordings.count ?? 0,
       };
     },
   });
