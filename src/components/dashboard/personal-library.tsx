@@ -1,7 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { FileAudio, Mic, Share2 } from "lucide-react";
+import { Download, FileAudio, FileText, Mic, Share2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { useAuth } from "@/hooks/use-auth";
+import { exportNotePdf, exportNoteTxt } from "@/lib/export-note";
+import { planFor } from "@/lib/tiers";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

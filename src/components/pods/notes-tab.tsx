@@ -1,9 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Download, FileAudio, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Download, FileAudio, FileText, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { useAuth } from "@/hooks/use-auth";
+import { exportNotePdf, exportNoteTxt } from "@/lib/export-note";
+import { planFor } from "@/lib/tiers";
 import { transcribeNote } from "@/lib/transcribe.functions";
 
 import { Button } from "@/components/ui/button";
@@ -49,6 +52,8 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
   const [playerUrls, setPlayerUrls] = useState<Record<string, string>>({});
   const [transcribingId, setTranscribingId] = useState<string | null>(null);
   const runTranscribe = useServerFn(transcribeNote);
+  const { profile } = useAuth();
+  const plan = planFor(profile?.tier);
 
   const notes = useQuery({
     queryKey: ["notes", podId],
@@ -239,6 +244,26 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
                           )}
                         </Button>
                       </>
+                    ) : null}
+                    {note.transcript || note.summary ? (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Export as TXT"
+                        onClick={() => exportNoteTxt(note)}
+                      >
+                        <FileText className="size-4" />
+                      </Button>
+                    ) : null}
+                    {plan.exports.includes("pdf") && (note.transcript || note.summary) ? (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Export as PDF"
+                        onClick={() => exportNotePdf(note)}
+                      >
+                        <Download className="size-4" />
+                      </Button>
                     ) : null}
                     {note.created_by === userId ? (
                       <Button
