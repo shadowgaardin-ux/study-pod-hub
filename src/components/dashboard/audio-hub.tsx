@@ -53,7 +53,7 @@ type SpeechRecognitionEventLike = {
 
 function getSpeechRecognition(): (new () => SpeechRecognitionInstance) | null {
   const w = window as unknown as Record<string, unknown>;
-  return (w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null) as
+  return (w["SpeechRecognition"] ?? w["webkitSpeechRecognition"] ?? null) as
     | (new () => SpeechRecognitionInstance)
     | null;
 }
