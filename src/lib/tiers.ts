@@ -8,6 +8,12 @@ export interface TierPlan {
   maxPods: number;
   maxNotes: number;
   maxFlashcards: number;
+  /** Max saved recordings (notes with audio). */
+  maxRecordings: number;
+  /** Max minutes per recording before it auto-stops. */
+  maxRecordingMinutes: number;
+  /** Export formats available on this plan. */
+  exports: ("txt" | "pdf")[];
   features: string[];
   recommended?: boolean;
 }
@@ -23,10 +29,15 @@ export const TIER_PLANS: Record<Tier, TierPlan> = {
     maxPods: 1,
     maxNotes: 10,
     maxFlashcards: 50,
+    maxRecordings: 20,
+    maxRecordingMinutes: 30,
+    exports: ["txt"],
     features: [
       "1 study pod",
       "10 lecture notes",
       "50 flashcards",
+      "20 recordings · 30 min each",
+      "Export notes as TXT",
       "Pod chat & shared decks",
     ],
   },
@@ -38,11 +49,16 @@ export const TIER_PLANS: Record<Tier, TierPlan> = {
     maxPods: 10,
     maxNotes: 200,
     maxFlashcards: 2000,
+    maxRecordings: 200,
+    maxRecordingMinutes: 120,
+    exports: ["txt", "pdf"],
     recommended: true,
     features: [
       "10 study pods",
       "200 lecture notes",
       "2,000 flashcards",
+      "200 recordings · 2 hours each",
+      "Export notes as TXT & PDF",
       "Audio uploads up to 50MB",
       "AI practice quizzes",
     ],
@@ -55,9 +71,14 @@ export const TIER_PLANS: Record<Tier, TierPlan> = {
     maxPods: UNLIMITED,
     maxNotes: UNLIMITED,
     maxFlashcards: UNLIMITED,
+    maxRecordings: UNLIMITED,
+    maxRecordingMinutes: 300,
+    exports: ["txt", "pdf"],
     features: [
       "Unlimited study pods",
       "Unlimited notes & flashcards",
+      "Unlimited recordings · 5 hours each",
+      "All export formats",
       "Priority AI transcription",
       "Priority AI quiz generation",
       "Early access to new features",

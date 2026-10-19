@@ -1,7 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { FileAudio, Mic, Share2 } from "lucide-react";
+import { Download, FileAudio, FileText, Mic, Share2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { useAuth } from "@/hooks/use-auth";
+import { exportNotePdf, exportNoteTxt } from "@/lib/export-note";
+import { planFor } from "@/lib/tiers";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,9 +39,21 @@ export function PersonalLibrary({
 }) {
   const notes = usePersonalNotes(userId);
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+  const plan = planFor(profile?.tier);
   const [sharing, setSharing] = useState<LibraryNote | null>(null);
   const [podId, setPodId] = useState("");
   const [busy, setBusy] = useState(false);
+
+  async function remove(note: LibraryNote) {
+    const { error } = await supabase.from("notes").delete().eq("id", note.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Recording deleted");
+    await queryClient.invalidateQueries();
+  }
 
   async function share() {
     if (!sharing || !podId) return;
@@ -86,18 +102,50 @@ export function PersonalLibrary({
               {note.summary ? (
                 <p className="line-clamp-3 text-sm text-muted-foreground">{note.summary}</p>
               ) : null}
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-auto w-full gap-2"
-                disabled={!pods?.length}
-                onClick={() => {
-                  setSharing(note);
-                  setPodId(pods?.[0]?.id ?? "");
-                }}
-              >
-                <Share2 className="size-4" /> Share to pod
-              </Button>
+              <div className="mt-auto flex flex-col gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full gap-2"
+                  disabled={!pods?.length}
+                  onClick={() => {
+                    setSharing(note);
+                    setPodId(pods?.[0]?.id ?? "");
+                  }}
+                >
+                  <Share2 className="size-4" /> Share to pod
+                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1 gap-1.5"
+                    disabled={!note.transcript && !note.summary}
+                    onClick={() => exportNoteTxt(note)}
+                  >
+                    <FileText className="size-3.5" /> TXT
+                  </Button>
+                  {plan.exports.includes("pdf") ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="flex-1 gap-1.5"
+                      disabled={!note.transcript && !note.summary}
+                      onClick={() => exportNotePdf(note)}
+                    >
+                      <Download className="size-3.5" /> PDF
+                    </Button>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1 gap-1.5 text-destructive hover:text-destructive"
+                    onClick={() => void remove(note)}
+                  >
+                    <Trash2 className="size-3.5" /> Delete
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ))}

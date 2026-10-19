@@ -52,13 +52,17 @@ function DashboardPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
 
+  const firstName = profile?.full_name?.split(" ")[0] || "there";
+  const isNewUser = Boolean(
+    user?.created_at && Date.now() - new Date(user.created_at).getTime() < 24 * 60 * 60 * 1000,
+  );
+  const greeting = isNewUser ? `Welcome, ${firstName}!` : `Welcome back, ${firstName}!`;
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="display text-3xl font-semibold tracking-tight">
-            Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}
-          </h1>
+          <h1 className="display text-3xl font-semibold tracking-tight">{greeting}</h1>
           <p className="text-muted-foreground">Pick up where your study pods left off.</p>
         </div>
         <div className="flex gap-2">
@@ -75,10 +79,11 @@ function DashboardPage() {
         <CardHeader className="pb-3">
           <CardTitle className="display text-lg">{plan.tier} plan usage</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-6 sm:grid-cols-3">
+        <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <Meter label="Pods" used={usage.data?.pods ?? 0} limit={plan.maxPods} />
           <Meter label="Notes" used={usage.data?.notes ?? 0} limit={plan.maxNotes} />
           <Meter label="Flashcards" used={usage.data?.flashcards ?? 0} limit={plan.maxFlashcards} />
+          <Meter label="Recordings" used={usage.data?.recordings ?? 0} limit={plan.maxRecordings} />
         </CardContent>
       </Card>
 
