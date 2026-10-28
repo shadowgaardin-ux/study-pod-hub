@@ -80,6 +80,21 @@ export function AudioHub({
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const sessionRef = useRef<string>("");
   const indexRef = useRef(0);
+  const transcriptRef = useRef("");
+  const pendingWrites = useRef<Promise<unknown>[]>([]);
+  const [interim, setInterim] = useState("");
+
+  function updateTranscript(text: string) {
+    transcriptRef.current = text;
+    setLiveTranscript(text);
+    if (sessionRef.current) {
+      try {
+        localStorage.setItem(`transcript:${sessionRef.current}`, text);
+      } catch {
+        /* storage full or blocked */
+      }
+    }
+  }
 
   const maxSeconds = plan.maxRecordingMinutes * 60;
   const remaining = Math.max(0, maxSeconds - elapsed);
@@ -105,12 +120,21 @@ export function AudioHub({
   useEffect(() => {
     void listBufferedSessions().then((sessions) => {
       const latest = sessions[0];
-      if (latest) setRecovered({ sessionId: latest.sessionId, size: latest.size });
-    });
+      if (latest) {
+        sessionRef.current = latest.sessionId;
+        setRecovered({ sessionId: latest.sessionId, size: latest.size });
+        const saved = localStorage.getItem(`transcript:${latest.sessionId}`);
+        if (saved) {
+          transcriptRef.current = saved;
+          setLiveTranscript(saved);
+        }
+      }
+    }).catch(() => undefined);
   }, []);
 
-  async function saveBlob(blob: Blob, filename: string, transcriptText?: string) {
-    if (!userId) return;
+  /** Returns true only when both the file and the note were saved. */
+  async function saveBlob(blob: Blob, filename: string, transcriptText?: string): Promise<boolean> {
+    if (!userId) return false;
     setBusy(true);
     const podId = target === PERSONAL ? null : target;
     const folder = podId ?? userId;
@@ -118,8 +142,8 @@ export function AudioHub({
     const { error: uploadError } = await supabase.storage.from("pod-audio").upload(path, blob);
     if (uploadError) {
       setBusy(false);
-      toast.error(uploadError.message);
-      return;
+      toast.error(`Upload failed — your recording is kept on this device. ${uploadError.message}`);
+      return false;
     }
     const { error } = await supabase.from("notes").insert({
       pod_id: podId,
@@ -130,13 +154,16 @@ export function AudioHub({
     });
     setBusy(false);
     if (error) {
-      toast.error(error.message);
-      return;
+      await supabase.storage.from("pod-audio").remove([path]);
+      toast.error(`Could not save the note — your recording is kept on this device. ${error.message}`);
+      return false;
     }
     toast.success(podId ? "Saved to your pod" : "Saved to your personal library");
     setTitle("");
+    transcriptRef.current = "";
     setLiveTranscript("");
     await queryClient.invalidateQueries();
+    return true;
   }
 
   function startRecognition() {
@@ -147,22 +174,18 @@ export function AudioHub({
     recognition.interimResults = true;
     recognition.lang = "en-US";
     recognition.onresult = (event) => {
-      let interim = "";
-      setLiveTranscript((prev) => {
-        let next = prev;
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i]!;
-          if (result.isFinal) {
-            next = `${next}${next && !next.endsWith(" ") ? " " : ""}${result[0].transcript.trim()}`;
-          } else {
-            interim += result[0].transcript;
-          }
+      let pending = "";
+      let next = transcriptRef.current;
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i]!;
+        if (result.isFinal) {
+          next = `${next}${next && !next.endsWith(" ") ? " " : ""}${result[0].transcript.trim()}`;
+        } else {
+          pending += result[0].transcript;
         }
-        return next;
-      });
-      // Interim text is shown via a transient suffix — kept simple by
-      // appending finals only; interim appears once finalized.
-      void interim;
+      }
+      if (next !== transcriptRef.current) updateTranscript(next);
+      setInterim(pending.trim());
     };
     recognition.onend = () => {
       // Browser sometimes ends recognition mid-recording; restart while recording.
@@ -183,8 +206,11 @@ export function AudioHub({
   }
 
   function stopRecognition() {
-    recognitionRef.current?.stop();
+    const recognition = recognitionRef.current;
     recognitionRef.current = null;
+    if (recognition) recognition.onend = null;
+    recognition?.stop();
+    setInterim("");
   }
 
   async function startRecording() {
@@ -204,25 +230,42 @@ export function AudioHub({
       const sessionId = crypto.randomUUID();
       sessionRef.current = sessionId;
       indexRef.current = 0;
+      pendingWrites.current = [];
+      updateTranscript("");
       const startedAt = Date.now();
 
       recorder.ondataavailable = (event) => {
         if (event.data.size === 0) return;
-        void bufferChunk({
+        const write = bufferChunk({
           sessionId,
           index: indexRef.current++,
           startedAt,
           mimeType: recorder.mimeType || "audio/webm",
           blob: event.data,
-        });
+        }).catch(() => toast.error("Could not back up part of the recording on this device"));
+        pendingWrites.current.push(write);
       };
       recorder.onstop = async () => {
         stream.getTracks().forEach((track) => track.stop());
         stopRecognition();
-        const blob = await assembleSession(sessionId);
-        if (blob) await saveBlob(blob, "lecture.webm", liveTranscript);
-        await clearSession(sessionId);
-        setRecovered(null);
+        try {
+          // Wait for the final slice to reach the on-device backup.
+          await Promise.all(pendingWrites.current);
+          const blob = await assembleSession(sessionId);
+          if (!blob) return;
+          const ok = await saveBlob(blob, "lecture.webm", transcriptRef.current);
+          if (ok) {
+            await clearSession(sessionId);
+            localStorage.removeItem(`transcript:${sessionId}`);
+            setRecovered(null);
+          } else {
+            setRecovered({ sessionId, size: blob.size });
+          }
+        } catch {
+          setBusy(false);
+          setRecovered({ sessionId, size: 0 });
+          toast.error("Saving failed — your recording is kept on this device. Try “Save it” again.");
+        }
       };
       // 5-second slices so an interruption loses at most a few seconds.
       recorder.start(5000);
@@ -248,8 +291,10 @@ export function AudioHub({
       setRecovered(null);
       return;
     }
-    await saveBlob(blob, "recovered-lecture.webm");
+    const ok = await saveBlob(blob, "recovered-lecture.webm", transcriptRef.current);
+    if (!ok) return;
     await clearSession(recovered.sessionId);
+    localStorage.removeItem(`transcript:${recovered.sessionId}`);
     setRecovered(null);
   }
 
@@ -315,7 +360,10 @@ export function AudioHub({
                   size="sm"
                   variant="ghost"
                   onClick={() => {
+                    if (!window.confirm("Discard this recording permanently?")) return;
                     void clearSession(recovered.sessionId);
+                    localStorage.removeItem(`transcript:${recovered.sessionId}`);
+                    updateTranscript("");
                     setRecovered(null);
                   }}
                 >
@@ -375,7 +423,7 @@ export function AudioHub({
             </p>
             <Textarea
               value={liveTranscript}
-              onChange={(e) => setLiveTranscript(e.target.value)}
+              onChange={(e) => updateTranscript(e.target.value)}
               rows={5}
               placeholder={
                 recording
@@ -384,6 +432,9 @@ export function AudioHub({
               }
               className="bg-background"
             />
+            {interim ? (
+              <p className="text-sm italic text-muted-foreground">{interim}…</p>
+            ) : null}
           </div>
         )}
       </CardContent>
