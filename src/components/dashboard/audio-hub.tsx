@@ -121,6 +121,7 @@ export function AudioHub({
     void listBufferedSessions().then((sessions) => {
       const latest = sessions[0];
       if (latest) {
+        sessionRef.current = latest.sessionId;
         setRecovered({ sessionId: latest.sessionId, size: latest.size });
         const saved = localStorage.getItem(`transcript:${latest.sessionId}`);
         if (saved) {
