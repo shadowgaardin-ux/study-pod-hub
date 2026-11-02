@@ -15,7 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/use-auth";
+import { transcribeNote } from "@/lib/transcribe.functions";
 import { supabase } from "@/integrations/supabase/client";
 import {
   COMPRESSED_BITRATE,
@@ -42,6 +44,7 @@ type SpeechRecognitionInstance = {
   interimResults: boolean;
   lang: string;
   onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror?: ((event: { error?: string }) => void) | null;
   onend: (() => void) | null;
   start: () => void;
   stop: () => void;
@@ -83,6 +86,7 @@ export function AudioHub({
   const transcriptRef = useRef("");
   const pendingWrites = useRef<Promise<unknown>[]>([]);
   const [interim, setInterim] = useState("");
+  const runTranscribe = useServerFn(transcribeNote);
 
   function updateTranscript(text: string) {
     transcriptRef.current = text;
@@ -145,13 +149,13 @@ export function AudioHub({
       toast.error(`Upload failed — your recording is kept on this device. ${uploadError.message}`);
       return false;
     }
-    const { error } = await supabase.from("notes").insert({
+    const { data: inserted, error } = await supabase.from("notes").insert({
       pod_id: podId,
       created_by: userId,
       title: title.trim() || `Recording ${new Date().toLocaleString()}`,
       audio_url: path,
       transcript: transcriptText?.trim() || null,
-    });
+    }).select("id").single();
     setBusy(false);
     if (error) {
       await supabase.storage.from("pod-audio").remove([path]);
@@ -163,12 +167,26 @@ export function AudioHub({
     transcriptRef.current = "";
     setLiveTranscript("");
     await queryClient.invalidateQueries();
+    if (inserted && !transcriptText?.trim()) {
+      toast.info("Transcribing your recording…");
+      runTranscribe({ data: { noteId: inserted.id, audioPath: path } })
+        .then(() => {
+          toast.success("Transcript ready");
+          return queryClient.invalidateQueries();
+        })
+        .catch((e: unknown) =>
+          toast.error(e instanceof Error ? e.message : "Transcription failed"),
+        );
+    }
     return true;
   }
 
   function startRecognition() {
     const Recognition = getSpeechRecognition();
-    if (!Recognition) return;
+    if (!Recognition) {
+      toast.info("Live words aren't supported in this browser — we'll transcribe after you stop.");
+      return;
+    }
     const recognition = new Recognition();
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -186,6 +204,11 @@ export function AudioHub({
       }
       if (next !== transcriptRef.current) updateTranscript(next);
       setInterim(pending.trim());
+    };
+    recognition.onerror = (event: { error?: string }) => {
+      if (event.error === "no-speech" || event.error === "aborted") return;
+      recognition.onend = null;
+      toast.info("Live words stopped on this device — we'll transcribe after you stop.");
     };
     recognition.onend = () => {
       // Browser sometimes ends recognition mid-recording; restart while recording.

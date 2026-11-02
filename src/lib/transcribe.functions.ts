@@ -23,11 +23,15 @@ export const transcribeNote = createServerFn({ method: "POST" })
       throw new Error(downloadError?.message ?? "Could not read the audio file");
     }
 
-    const buffer = Buffer.from(await fileData.arrayBuffer());
-    if (buffer.byteLength > 20 * 1024 * 1024) {
+    const bytes = new Uint8Array(await fileData.arrayBuffer());
+    if (bytes.byteLength > 20 * 1024 * 1024) {
       throw new Error("That recording is too long to transcribe automatically");
     }
-    const base64 = buffer.toString("base64");
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    }
+    const base64 = btoa(binary);
     const ext = data.audioPath.split(".").pop()?.toLowerCase() ?? "webm";
     const format = ["mp3", "wav", "m4a", "ogg", "webm", "mp4"].includes(ext) ? ext : "webm";
 
@@ -41,7 +45,7 @@ export const transcribeNote = createServerFn({ method: "POST" })
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3.8-flash",
         messages: [
           {
             role: "user",
@@ -59,7 +63,8 @@ export const transcribeNote = createServerFn({ method: "POST" })
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Transcription failed [${response.status}]: ${body}`);
+      console.error("Transcription failed", response.status, body);
+      throw new Error(response.status === 429 ? "AI is busy — try again in a minute" : response.status === 402 ? "AI credits have run out" : "Transcription failed — try again");
     }
 
     const result = (await response.json()) as {
