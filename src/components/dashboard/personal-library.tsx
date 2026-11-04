@@ -1,5 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Download, FileAudio, FileText, Mic, Share2, Trash2 } from "lucide-react";
+import { Download, Eye, FileAudio, FileText, Mic, Share2, Trash2 } from "lucide-react";
+
+import { NoteViewer } from "@/components/notes/note-viewer";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -44,6 +46,9 @@ export function PersonalLibrary({
   const [sharing, setSharing] = useState<LibraryNote | null>(null);
   const [podId, setPodId] = useState("");
   const [busy, setBusy] = useState(false);
+  const [viewingId, setViewingId] = useState<string | null>(null);
+  const viewing = notes.data?.find((n) => n.id === viewingId) ?? null;
+  const setViewing = (note: LibraryNote | null) => setViewingId(note?.id ?? null);
 
   async function remove(note: LibraryNote) {
     const { error } = await supabase.from("notes").delete().eq("id", note.id);
@@ -99,10 +104,21 @@ export function PersonalLibrary({
                   </p>
                 </div>
               </div>
-              {note.summary ? (
-                <p className="line-clamp-3 text-sm text-muted-foreground">{note.summary}</p>
-              ) : null}
+              <button
+                type="button"
+                onClick={() => setViewing(note)}
+                className="rounded-md bg-muted/60 p-3 text-left text-sm text-muted-foreground transition-colors hover:bg-muted"
+              >
+                {note.transcript || note.summary ? (
+                  <span className="line-clamp-3">{note.transcript || note.summary}</span>
+                ) : (
+                  <span className="italic">No transcript yet — tap to open and transcribe.</span>
+                )}
+              </button>
               <div className="mt-auto flex flex-col gap-2">
+                <Button size="sm" className="w-full gap-2" onClick={() => setViewing(note)}>
+                  <Eye className="size-4" /> Open & edit transcript
+                </Button>
                 <Button
                   size="sm"
                   variant="outline"
@@ -150,6 +166,12 @@ export function PersonalLibrary({
           </Card>
         ))}
       </div>
+
+      <NoteViewer
+        note={viewing}
+        userId={userId}
+        onOpenChange={(open) => !open && setViewing(null)}
+      />
 
       <Dialog open={sharing !== null} onOpenChange={(open) => !open && setSharing(null)}>
         <DialogContent>
