@@ -9,6 +9,7 @@ import { exportNotePdf, exportNoteTxt } from "@/lib/export-note";
 import { planFor } from "@/lib/tiers";
 import { transcribeNote } from "@/lib/transcribe.functions";
 
+import { NoteViewer } from "@/components/notes/note-viewer";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,6 +52,7 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
   const [busy, setBusy] = useState(false);
   const [playerUrls, setPlayerUrls] = useState<Record<string, string>>({});
   const [transcribingId, setTranscribingId] = useState<string | null>(null);
+  const [viewingId, setViewingId] = useState<string | null>(null);
   const runTranscribe = useServerFn(transcribeNote);
   const { profile } = useAuth();
   const plan = planFor(profile?.tier);
@@ -214,7 +216,15 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <CardTitle className="display text-lg">{note.title}</CardTitle>
+                    <CardTitle className="display text-lg">
+                      <button
+                        type="button"
+                        className="text-left hover:underline"
+                        onClick={() => setViewingId(note.id)}
+                      >
+                        {note.title}
+                      </button>
+                    </CardTitle>
                     <CardDescription>
                       {new Date(note.created_at).toLocaleDateString()}
                     </CardDescription>
@@ -307,6 +317,12 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
           </CardContent>
         </Card>
       )}
+
+      <NoteViewer
+        note={notes.data?.find((n) => n.id === viewingId) ?? null}
+        userId={userId}
+        onOpenChange={(o) => !o && setViewingId(null)}
+      />
     </div>
   );
 }

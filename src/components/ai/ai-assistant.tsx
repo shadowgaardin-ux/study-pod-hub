@@ -132,6 +132,15 @@ export function AiAssistant() {
               ))}
             </div>
 
+            {note && source ? (
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Transcript</p>
+                <div className="max-h-56 overflow-y-auto whitespace-pre-wrap rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                  {source}
+                </div>
+              </div>
+            ) : null}
+
             {note && !source && (
               <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
                 This note has no transcript yet — add one, or transcribe the audio, to use the
