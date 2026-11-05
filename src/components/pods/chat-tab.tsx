@@ -63,7 +63,7 @@ interface PendingUpload {
   caption: string;
   replyTo: string | null;
   progress: number;
-  error?: string;
+  error?: string | undefined;
 }
 
 export function ChatTab({ podId, userId }: { podId: string; userId: string | undefined }) {
@@ -154,10 +154,10 @@ export function ChatTab({ podId, userId }: { podId: string; userId: string | und
         .from("pod_discussions")
         .update({ message: body, edited_at: new Date().toISOString() })
         .eq("id", editing.id);
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       setEditing(null);
       setText("");
-      return void refresh();
+      void refresh(); return;
     }
     setText("");
     const reply = replyTo?.id ?? null;
@@ -182,8 +182,8 @@ export function ChatTab({ podId, userId }: { podId: string; userId: string | und
       const token = data.session?.access_token;
       if (!token) throw new Error("Your session expired — sign in again");
       await uploadWithProgress({
-        url: import.meta.env.VITE_SUPABASE_URL,
-        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        url: import.meta.env["VITE_SUPABASE_URL"],
+        apikey: import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"],
         token,
         path,
         file: item.file,
@@ -262,7 +262,7 @@ export function ChatTab({ podId, userId }: { podId: string; userId: string | und
       .from("pod_discussions")
       .update({ deleted_at: new Date().toISOString() })
       .eq("id", message.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     if (message.attachment_path) await supabase.storage.from(CHAT_BUCKET).remove([message.attachment_path]);
     void refresh();
   }
@@ -270,9 +270,9 @@ export function ChatTab({ podId, userId }: { podId: string; userId: string | und
   async function togglePin(message: ChatMessage) {
     const { error } = await supabase
       .from("pod_discussions")
-      .update(message.pinned_at ? { pinned_at: null, pinned_by: null } : { pinned_at: new Date().toISOString(), pinned_by: userId })
+      .update(message.pinned_at ? { pinned_at: null, pinned_by: null } : { pinned_at: new Date().toISOString(), pinned_by: userId ?? null })
       .eq("id", message.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(message.pinned_at ? "Unpinned" : "Pinned for everyone");
     void refresh();
   }
