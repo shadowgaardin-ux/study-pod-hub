@@ -8,6 +8,13 @@
       "when": 1793878589834,
       "tag": "0000_whatsapp_style_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793878613585,
+      "tag": "0001_pod_join_request_profiles",
+      "breakpoints": true
     }
   ]
 }

@@ -477,6 +477,17 @@ export type Database = {
         Returns: boolean
       }
       join_pod_by_code: { Args: { _invite_code: string }; Returns: string }
+      pod_join_request_profiles: {
+        Args: { _pod_id: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          full_name: string
+          id: string
+          message: string
+          user_id: string
+        }[]
+      }
       pod_member_profiles: {
         Args: { _pod_id: string }
         Returns: {
