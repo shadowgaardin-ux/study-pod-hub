@@ -56,21 +56,21 @@ export function HubPanel({
       .update({ role })
       .eq("pod_id", podId)
       .eq("user_id", memberId);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(role === "admin" ? "Made hub admin" : "Admin removed");
     void queryClient.invalidateQueries({ queryKey: ["pod-members", podId] });
   }
 
   async function remove(memberId: string) {
     const { error } = await supabase.from("pod_members").delete().eq("pod_id", podId).eq("user_id", memberId);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Removed from hub");
     void queryClient.invalidateQueries({ queryKey: ["pod-members", podId] });
   }
 
   async function decide(id: string, status: "approved" | "declined") {
     const { error } = await supabase.from("pod_join_requests").update({ status }).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(status === "approved" ? "Request approved" : "Request declined");
     void queryClient.invalidateQueries({ queryKey: ["join-requests", podId] });
     void queryClient.invalidateQueries({ queryKey: ["pod-members", podId] });
