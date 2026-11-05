@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          pod_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          pod_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          pod_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "pod_discussions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_reactions_pod_id_fkey"
+            columns: ["pod_id"]
+            isOneToOne: false
+            referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flashcard_reviews: {
         Row: {
           card_id: string
@@ -183,24 +225,57 @@ export type Database = {
       }
       pod_discussions: {
         Row: {
+          attachment_name: string | null
+          attachment_path: string | null
+          attachment_size: number | null
+          attachment_type: string | null
           created_at: string
+          deleted_at: string | null
+          duration_ms: number | null
+          edited_at: string | null
           id: string
+          kind: string
           message: string
+          pinned_at: string | null
+          pinned_by: string | null
           pod_id: string
+          reply_to_id: string | null
           user_id: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
           created_at?: string
+          deleted_at?: string | null
+          duration_ms?: number | null
+          edited_at?: string | null
           id?: string
+          kind?: string
           message: string
+          pinned_at?: string | null
+          pinned_by?: string | null
           pod_id: string
+          reply_to_id?: string | null
           user_id: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_path?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
           created_at?: string
+          deleted_at?: string | null
+          duration_ms?: number | null
+          edited_at?: string | null
           id?: string
+          kind?: string
           message?: string
+          pinned_at?: string | null
+          pinned_by?: string | null
           pod_id?: string
+          reply_to_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -209,6 +284,13 @@ export type Database = {
             columns: ["pod_id"]
             isOneToOne: false
             referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pod_discussions_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "pod_discussions"
             referencedColumns: ["id"]
           },
           {
