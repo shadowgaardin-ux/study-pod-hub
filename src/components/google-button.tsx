@@ -3,6 +3,18 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
+
+/** Hosts served by Lovable, where the managed /~oauth broker exists. */
+export function isLovableHost(hostname: string) {
+  return (
+    hostname.endsWith(".lovable.app") ||
+    hostname.endsWith(".lovableproject.com") ||
+    hostname.endsWith(".lovable.dev") ||
+    hostname === "localhost" ||
+    hostname === "127.0.0.1"
+  );
+}
 
 export function GoogleButton({
   label = "Continue with Google",
@@ -16,6 +28,21 @@ export function GoogleButton({
   async function handleClick() {
     setLoading(true);
     if (next) sessionStorage.setItem("study-notes:post-auth-next", next);
+
+    // Off Lovable hosting (e.g. Vercel) the /~oauth broker route doesn't exist,
+    // so go straight through the auth backend's own Google flow.
+    if (!isLovableHost(window.location.hostname)) {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (error) {
+        toast.error("Google sign-in failed", { description: error.message });
+        setLoading(false);
+      }
+      return;
+    }
+
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + "/auth/callback",
     });
