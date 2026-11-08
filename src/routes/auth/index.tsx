@@ -225,7 +225,7 @@ function AuthPage() {
               <p className="mt-1 text-sm text-muted-foreground">
                 We'll email you a link to choose a new password.
               </p>
-              <form className="mt-6 space-y-4" onSubmit={handleForgot}>
+              <form method="post" className="mt-6 space-y-4" onSubmit={handleForgot}>
                 <div className="space-y-2">
                   <Label htmlFor="forgot-email">Email</Label>
                   <Input id="forgot-email" name="email" type="email" required autoComplete="email" />
@@ -255,7 +255,7 @@ function AuthPage() {
                 </TabsList>
 
                 <TabsContent value="login" className="mt-6">
-                  <form className="space-y-4" onSubmit={handleLogin}>
+                  <form method="post" className="space-y-4" onSubmit={handleLogin}>
                     <div className="space-y-2">
                       <Label htmlFor="login-email">Email</Label>
                       <Input id="login-email" name="email" type="email" required autoComplete="email" />
@@ -288,7 +288,7 @@ function AuthPage() {
                 </TabsContent>
 
                 <TabsContent value="signup" className="mt-6">
-                  <form className="space-y-4" onSubmit={handleSignup}>
+                  <form method="post" className="space-y-4" onSubmit={handleSignup}>
                     <div className="space-y-2">
                       <Label htmlFor="signup-name">Full name</Label>
                       <Input id="signup-name" name="fullName" required autoComplete="name" />
