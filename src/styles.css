@@ -179,3 +179,26 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+
+@utility rise-in {
+  animation: rise-in 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@utility rise-in-late {
+  animation: rise-in 480ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms both;
+}
+
+@utility rise-in-later {
+  animation: rise-in 480ms cubic-bezier(0.2, 0.8, 0.2, 1) 240ms both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
