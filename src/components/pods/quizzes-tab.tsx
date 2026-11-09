@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generatePodQuiz, type QuizQuestion } from "@/lib/ai.functions";
 import { cn } from "@/lib/utils";
 
@@ -32,14 +32,9 @@ export function QuizzesTab({ podId }: { podId: string }) {
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="display flex items-center gap-2 text-lg">
-            <Sparkles className="size-5 text-primary" /> AI practice quizzes
-          </CardTitle>
-          <CardDescription>Turn this pod's notes and transcripts into multiple-choice practice.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-center gap-3">
+      <section className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
+        <div className="flex items-center gap-3"><span className="grid size-11 place-items-center rounded-lg bg-accent text-accent-foreground"><Sparkles className="size-5" /></span><div><h2 className="display text-xl font-semibold">Practice quizzes</h2><p className="mt-1 text-xs text-muted-foreground">AI · 5 questions per quiz</p></div></div>
+        <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => void generate()} disabled={busy}>
             {busy ? <Loader2 className="size-4 animate-spin" /> : questions.length ? <RotateCcw className="size-4" /> : <Sparkles className="size-4" />}
             {busy ? "Creating quiz…" : questions.length ? "New quiz" : "Generate quiz"}
@@ -49,8 +44,9 @@ export function QuizzesTab({ podId }: { podId: string }) {
               Score: {score}/{questions.length} ({answered} answered)
             </span>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
+      {!questions.length ? <div className="flex flex-col items-center gap-3 py-16 text-center"><Sparkles className="size-10 text-primary" /><h3 className="display text-xl font-semibold">Ready for a little revision?</h3><p className="text-sm text-muted-foreground">Your next practice session awaits.</p></div> : null}
 
       {questions.map((q, i) => {
         const pick = picks[i];

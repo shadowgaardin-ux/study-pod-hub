@@ -22,7 +22,7 @@ import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -287,8 +287,8 @@ export function ChatTab({ podId, userId }: { podId: string; userId: string | und
   }
 
   return (
-    <Card className="flex h-[calc(100dvh-13rem)] min-h-[440px] flex-col overflow-hidden p-0 sm:h-[70vh]">
-      <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-3 py-2">
+    <section aria-label="Pod group chat" className="flex h-[70dvh] min-h-[440px] flex-col overflow-hidden rounded-lg border border-border bg-card sm:h-[65dvh]">
+      <div className="flex items-center gap-2 border-b border-border bg-card px-4 py-3">
         <div className="flex -space-x-2">
           {members.data?.slice(0, 3).map((m) => (
             <Avatar key={m.user_id} className="size-7 border-2 border-background">
@@ -316,7 +316,7 @@ export function ChatTab({ podId, userId }: { podId: string; userId: string | und
         </button>
       ) : null}
 
-      <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto bg-muted/20 px-2 py-3 sm:px-4">
+      <div ref={scrollRef} className="flex-1 space-y-1 overflow-y-auto bg-secondary/50 px-3 py-4 sm:px-5">
         {messages.isError ? (
           <div className="py-12 text-center text-sm text-destructive">
             Couldn't load messages.{" "}
@@ -370,7 +370,7 @@ export function ChatTab({ podId, userId }: { podId: string; userId: string | und
             );
           })
         ) : messages.isLoading ? null : (
-          <p className="py-12 text-center text-muted-foreground">No messages yet — say hello to your hub.</p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center"><span className="grid size-12 place-items-center rounded-lg bg-accent text-accent-foreground"><Smile className="size-6" /></span><p className="display text-xl font-semibold">A new conversation starts here</p><p className="text-sm text-muted-foreground">No messages yet.</p></div>
         )}
 
         {pending.map((item) => (
@@ -436,7 +436,7 @@ export function ChatTab({ podId, userId }: { podId: string; userId: string | und
           </div>
         </SheetContent>
       </Sheet>
-    </Card>
+    </section>
   );
 }
 

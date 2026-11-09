@@ -154,7 +154,8 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div><h2 className="display text-xl font-semibold">Shared notes &amp; recordings</h2><p className="mt-1 text-xs text-muted-foreground">{notes.data?.length ?? 0} shared resources</p></div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -210,20 +211,21 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
       {notes.isLoading ? (
         <Skeleton className="h-32 rounded-xl" />
       ) : notes.data?.length ? (
-        <div className="grid gap-4">
+        <div className="grid items-start gap-4 xl:grid-cols-2">
           {notes.data.map((note) => (
-            <Card key={note.id}>
+            <Card key={note.id} className="min-w-0 gap-3 border-border shadow-card transition-shadow hover:shadow-lift">
               <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <span className="mb-3 grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground">{note.audio_url ? <FileAudio className="size-5" /> : <FileText className="size-5" />}</span>
                     <CardTitle className="display text-lg">
-                      <button
-                        type="button"
-                        className="text-left hover:underline"
+                      <Button
+                        variant="link"
+                        className="h-auto max-w-full justify-start whitespace-normal p-0 text-left font-serif text-lg text-foreground"
                         onClick={() => setViewingId(note.id)}
                       >
                         {note.title}
-                      </button>
+                      </Button>
                     </CardTitle>
                     <CardDescription>
                       {new Date(note.created_at).toLocaleDateString()}
@@ -236,7 +238,7 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
                           size="icon"
                           variant="ghost"
                           aria-label="Play audio"
-                          onClick={() => void togglePlayer(note.id, note.audio_url!)}
+                          onClick={() => { if (note.audio_url) void togglePlayer(note.id, note.audio_url); }}
                         >
                           <FileAudio className="size-4" />
                         </Button>
@@ -295,8 +297,8 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
                 </CardContent>
               ) : null}
               {note.transcript ? (
-                <CardContent className="whitespace-pre-wrap text-sm text-muted-foreground">
-                  {note.transcript}
+                <CardContent className="whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">
+                  <p className="line-clamp-4">{note.transcript}</p>
                 </CardContent>
               ) : null}
               {note.summary ? (
@@ -304,18 +306,19 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
                   <span className="inline-flex items-center gap-1 font-medium">
                     <Download className="size-3.5" /> Summary
                   </span>
-                  <p className="text-muted-foreground">{note.summary}</p>
+                  <p className="line-clamp-3 break-words text-muted-foreground">{note.summary}</p>
                 </CardContent>
               ) : null}
             </Card>
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            No notes yet. Add the first lecture note for this pod.
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center gap-4 border-y border-dashed border-border py-16 text-center">
+          <span className="grid size-14 place-items-center rounded-lg bg-accent text-accent-foreground"><FileText className="size-7" /></span>
+          <h3 className="display text-xl font-semibold">Your shared library starts here</h3>
+          <p className="text-sm text-muted-foreground">No notes or recordings yet.</p>
+          <Button variant="outline" onClick={() => setOpen(true)}><Plus className="size-4" /> New note</Button>
+        </div>
       )}
 
       <NoteViewer
