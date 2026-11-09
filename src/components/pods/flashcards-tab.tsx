@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -63,7 +63,7 @@ function FlipCard({
   const [flipped, setFlipped] = useState(false);
   return (
     <Card
-      className="cursor-pointer select-none transition-shadow hover:shadow-md"
+      className="cursor-pointer select-none border-border shadow-card transition-shadow hover:shadow-lift"
       onClick={() => setFlipped((f) => !f)}
     >
       <CardContent className="flex min-h-32 flex-col justify-between gap-3 p-5">
@@ -75,16 +75,17 @@ function FlipCard({
             <RotateCw className="size-3" /> {flipped ? "Answer" : "Question"}
           </span>
           {canDelete ? (
-            <button
+            <Button
+              size="icon" variant="ghost"
               aria-label="Delete card"
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete();
               }}
-              className="hover:text-destructive"
+              className="size-7 hover:text-destructive"
             >
               <Trash2 className="size-3.5" />
-            </button>
+            </Button>
           ) : null}
         </div>
         {flipped ? (
@@ -201,7 +202,8 @@ export function FlashcardsTab({ podId, userId }: { podId: string; userId: string
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="mr-auto"><h2 className="display text-xl font-semibold">Flashcards</h2><p className="mt-1 text-xs text-muted-foreground">{cards.data?.length ?? 0} cards · {dueCount} due for review</p></div>
         <Button variant={dueOnly ? "default" : "outline"} onClick={() => setDueOnly((v) => !v)}>
           Study due ({dueCount})
         </Button>
@@ -287,14 +289,12 @@ export function FlashcardsTab({ podId, userId }: { podId: string; userId: string
           </section>
         ))
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="display text-lg">No flashcards yet</CardTitle>
-          </CardHeader>
-          <CardContent className="text-muted-foreground">
-            Create cards to revise with your pod. Tap a card to flip it.
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center gap-4 border-y border-dashed border-border py-16 text-center">
+          <span className="grid size-14 place-items-center rounded-lg bg-accent text-accent-foreground"><RotateCw className="size-7" /></span>
+          <h3 className="display text-xl font-semibold">{dueOnly ? "You're all caught up" : "A fresh deck awaits"}</h3>
+          <p className="text-sm text-muted-foreground">{dueOnly ? "No cards are due for review." : "No flashcards in this pod yet."}</p>
+          <Button variant="outline" onClick={() => dueOnly ? setDueOnly(false) : setOpen(true)}>{dueOnly ? "All cards" : <><Plus className="size-4" /> New card</>}</Button>
+        </div>
       )}
     </div>
   );
