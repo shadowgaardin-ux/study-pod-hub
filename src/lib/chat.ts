@@ -3,6 +3,8 @@
  * that reports progress. Kept free of React so it can be unit tested.
  */
 
+import { isSafeFile } from "./security-validation";
+
 export type ChatKind = "text" | "image" | "file" | "voice" | "audio";
 
 export interface ChatMessage {
@@ -43,15 +45,14 @@ const DOC_EXT = ["pdf", "doc", "docx", "ppt", "pptx"];
 
 export function extOf(name: string) {
   const parts = name.toLowerCase().split(".");
-  return parts.length > 1 ? parts.pop()! : "";
+  return parts.length > 1 ? parts.pop() ?? "" : "";
 }
 
 /** Decide how a file is shown. Documents are never treated as audio. */
 export function classifyFile(name: string, mime: string): Exclude<ChatKind, "text" | "voice"> | null {
-  const ext = extOf(name);
-  if (DOC_EXT.includes(ext)) return "file";
-  if (IMAGE_EXT.includes(ext) || mime.startsWith("image/")) return "image";
-  if (AUDIO_EXT.includes(ext) || mime.startsWith("audio/")) return "audio";
+  if (isSafeFile(name, mime, "file")) return "file";
+  if (isSafeFile(name, mime, "image")) return "image";
+  if (isSafeFile(name, mime, "audio")) return "audio";
   return null;
 }
 

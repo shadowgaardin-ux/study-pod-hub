@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { verifyNoteAudio } from "./security-validation";
 
 /**
  * Transcribe a note's audio with AI and save the transcript on the note.
@@ -11,10 +12,21 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const transcribeNote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
-    z.object({ noteId: z.string(), audioPath: z.string() }).parse(data),
+    z.object({ noteId: z.string().uuid(), audioPath: z.string().min(1).max(1024) }).parse(data),
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+
+    const { data: note, error: noteError } = await supabase.from("notes")
+      .select("created_by, pod_id, audio_url").eq("id", data.noteId).maybeSingle();
+    if (noteError) throw new Error("Could not read this note");
+    let isAdmin = false;
+    if (note?.pod_id && note.created_by !== context.userId) {
+      const { data: admin, error } = await supabase.rpc("is_pod_admin", { _pod_id: note.pod_id, _user_id: context.userId });
+      if (error) throw new Error("Could not verify note permissions");
+      isAdmin = admin === true;
+    }
+    verifyNoteAudio(note, context.userId, data.audioPath, isAdmin);
 
     const { data: fileData, error: downloadError } = await supabase.storage
       .from("pod-audio")
@@ -62,8 +74,7 @@ export const transcribeNote = createServerFn({ method: "POST" })
     });
 
     if (!response.ok) {
-      const body = await response.text();
-      console.error("Transcription failed", response.status, body);
+      console.error("Transcription failed", response.status);
       throw new Error(response.status === 429 ? "AI is busy — try again in a minute" : response.status === 402 ? "AI credits have run out" : "Transcription failed — try again");
     }
 
@@ -76,7 +87,7 @@ export const transcribeNote = createServerFn({ method: "POST" })
     const { error: updateError } = await supabase
       .from("notes")
       .update({ transcript })
-      .eq("id", data.noteId);
+      .eq("id", data.noteId).select("id").single();
     if (updateError) throw new Error(updateError.message);
 
     return { transcript };

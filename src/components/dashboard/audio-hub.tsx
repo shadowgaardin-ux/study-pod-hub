@@ -122,7 +122,8 @@ export function AudioHub({
 
   // A recording interrupted by a reload or network drop is still in IndexedDB.
   useEffect(() => {
-    void listBufferedSessions().then((sessions) => {
+    if (!userId) return;
+    void listBufferedSessions(userId).then((sessions) => {
       const latest = sessions[0];
       if (latest) {
         sessionRef.current = latest.sessionId;
@@ -134,14 +135,14 @@ export function AudioHub({
         }
       }
     }).catch(() => undefined);
-  }, []);
+  }, [userId]);
 
   /** Returns true only when both the file and the note were saved. */
   async function saveBlob(blob: Blob, filename: string, transcriptText?: string): Promise<boolean> {
     if (!userId) return false;
     setBusy(true);
     const podId = target === PERSONAL ? null : target;
-    const folder = podId ?? userId;
+    const folder = podId ? `${podId}/${userId}` : userId;
     const path = `${folder}/${crypto.randomUUID()}-${filename}`;
     const { error: uploadError } = await supabase.storage.from("pod-audio").upload(path, blob);
     if (uploadError) {
@@ -237,6 +238,7 @@ export function AudioHub({
   }
 
   async function startRecording() {
+    if (!userId) return;
     if (atRecordingLimit) {
       toast.error(
         `Your ${plan.tier} plan allows ${plan.maxRecordings} saved recordings. Delete older recordings or upgrade to record more.`,
@@ -261,6 +263,7 @@ export function AudioHub({
         if (event.data.size === 0) return;
         const write = bufferChunk({
           sessionId,
+          userId,
           index: indexRef.current++,
           startedAt,
           mimeType: recorder.mimeType || "audio/webm",
