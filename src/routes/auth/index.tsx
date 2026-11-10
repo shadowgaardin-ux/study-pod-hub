@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { type Tier } from "@/lib/tiers";
+import { postAuthDestination } from "@/lib/auth-navigation";
 import { supabase } from "@/integrations/supabase/client";
 
 const SKIP_EMAIL_CONFIRMATION = import.meta.env["VITE_SKIP_EMAIL_CONFIRMATION"] === "true";
@@ -22,10 +22,6 @@ const authSearchSchema = z.object({
   // Same-origin relative path to return to after signing in (e.g. the app-authorization screen).
   next: z.string().optional(),
 });
-
-function safeNext(next: string | undefined) {
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
-}
 
 
 export const Route = createFileRoute("/auth/")({
@@ -51,20 +47,16 @@ type View = "auth" | "verify" | "forgot";
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { signup, plan, next } = Route.useSearch();
-  const nextPath = safeNext(next) ?? (plan && plan !== "Free" ? "/billing" : undefined);
+  const { signup, plan } = Route.useSearch();
   const { session, loading } = useAuth();
   const [view, setView] = useState<View>("auth");
   const [pendingEmail, setPendingEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
   const goAfterAuth = useCallback(() => {
-    if (nextPath) {
-      window.location.href = nextPath;
-      return;
-    }
-    void navigate({ to: "/dashboard", replace: true });
-  }, [nextPath, navigate]);
+    sessionStorage.removeItem("study-notes:post-auth-next");
+    void navigate({ to: postAuthDestination(), replace: true });
+  }, [navigate]);
 
   useEffect(() => {
     if (!loading && session) goAfterAuth();
@@ -284,7 +276,7 @@ function AuthPage() {
                     </Button>
                   </form>
                   <Divider />
-                  <GoogleButton label="Log in with Google" next={nextPath} />
+                  <GoogleButton label="Log in with Google" />
                 </TabsContent>
 
                 <TabsContent value="signup" className="mt-6">
@@ -322,7 +314,7 @@ function AuthPage() {
                     </Button>
                   </form>
                   <Divider />
-                  <GoogleButton label="Sign up with Google" next={nextPath} />
+                  <GoogleButton label="Sign up with Google" />
                 </TabsContent>
               </Tabs>
             </div>
