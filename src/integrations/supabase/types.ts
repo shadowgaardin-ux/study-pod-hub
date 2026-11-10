@@ -455,6 +455,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_read_note_file: { Args: { _path: string }; Returns: boolean }
       discover_pods: {
         Args: { _search?: string }
         Returns: {

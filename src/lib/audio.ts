@@ -4,6 +4,8 @@
  * and upload validation.
  */
 
+import { isSafeFile } from "./security-validation";
+
 export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 export const UPLOAD_ACCEPT =
   "audio/*,.mp3,.m4a,.wav,.ogg,.webm,application/pdf,.pdf,.ppt,.pptx";
@@ -12,11 +14,11 @@ export const UPLOAD_HINT = ".mp3, .m4a, .wav, .pdf, .pptx — Max 50MB";
 const ALLOWED_EXT = ["mp3", "m4a", "wav", "ogg", "webm", "pdf", "ppt", "pptx"];
 
 export function validateUpload(file: File): string | null {
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-  if (!ALLOWED_EXT.includes(ext) && !file.type.startsWith("audio/")) {
+  if (!isSafeFile(file.name, file.type, "audio") && !isSafeFile(file.name, file.type, "file")) {
     return `Unsupported file type. Allowed: ${UPLOAD_HINT}`;
   }
   if (file.size > MAX_UPLOAD_BYTES) return "That file is larger than the 50MB limit";
+  if (file.size === 0) return "That file is empty";
   return null;
 }
 
@@ -94,6 +96,7 @@ function tx<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequ
 export interface BufferedChunk {
   key: string;
   sessionId: string;
+  userId: string;
   index: number;
   startedAt: number;
   mimeType: string;
@@ -111,12 +114,13 @@ export async function readSession(sessionId: string): Promise<BufferedChunk[]> {
   return all.filter((c) => c.sessionId === sessionId).sort((a, b) => a.index - b.index);
 }
 
-export async function listBufferedSessions(): Promise<
+export async function listBufferedSessions(userId: string): Promise<
   { sessionId: string; startedAt: number; mimeType: string; size: number }[]
 > {
   const all = await tx<BufferedChunk[]>("readonly", (store) => store.getAll() as never);
   const map = new Map<string, { sessionId: string; startedAt: number; mimeType: string; size: number }>();
   for (const chunk of all) {
+    if (chunk.userId !== userId) continue;
     const entry = map.get(chunk.sessionId) ?? {
       sessionId: chunk.sessionId,
       startedAt: chunk.startedAt,
@@ -139,6 +143,6 @@ export async function assembleSession(sessionId: string): Promise<Blob | null> {
   if (!chunks.length) return null;
   return new Blob(
     chunks.map((c) => c.blob),
-    { type: chunks[0]!.mimeType || "audio/webm" },
+    { type: chunks[0]?.mimeType || "audio/webm" },
   );
 }

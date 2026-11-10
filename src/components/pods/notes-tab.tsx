@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { exportNotePdf, exportNoteTxt } from "@/lib/export-note";
 import { planFor } from "@/lib/tiers";
 import { transcribeNote } from "@/lib/transcribe.functions";
+import { validateUpload } from "@/lib/audio";
+import { isSafeFile } from "@/lib/security-validation";
 
 import { NoteViewer } from "@/components/notes/note-viewer";
 import { Button } from "@/components/ui/button";
@@ -77,12 +79,13 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
     let audioPath: string | null = null;
 
     if (file) {
-      if (file.size > 50 * 1024 * 1024) {
+      const fileError = validateUpload(file);
+      if (fileError || !isSafeFile(file.name, file.type, "audio")) {
         setBusy(false);
-        toast.error("Audio files must be under 50MB");
+        toast.error(fileError ?? "Choose a supported audio file");
         return;
       }
-      const path = `${userId}/${podId}/${crypto.randomUUID()}-${file.name}`;
+      const path = `${podId}/${userId}/${crypto.randomUUID()}-${file.name.replace(/[^\w.\-]/g, "_")}`;
       const { error: uploadError } = await supabase.storage.from("pod-audio").upload(path, file);
       if (uploadError) {
         setBusy(false);
@@ -101,6 +104,7 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
     });
     setBusy(false);
     if (error) {
+      if (audioPath) await supabase.storage.from("pod-audio").remove([audioPath]);
       toast.error(error.message);
       return;
     }

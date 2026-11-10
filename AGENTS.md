@@ -13,3 +13,5 @@
 - Keep pod workspace presentation in its existing route and tab components, reusing the same queries and mutation handlers so visual updates do not alter access or data contracts.
 - Use the shared post-auth destination for completed email and Google sign-ins, so auth redirects remain consistent.
 - Select Nitro's Vercel preset only when VERCEL=1, preserving the existing Lovable deployment target elsewhere.
+- Enforce pod membership, immutable ownership, recording counts and attachment access at the database/storage boundary; browser checks alone are bypassable.
+- Scope recording recovery to its authenticated owner and authorize note/audio pairs before transcription; shared devices and mismatched IDs must not leak private recordings.
