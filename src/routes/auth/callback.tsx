@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { postAuthDestination } from "@/lib/auth-navigation";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
@@ -33,23 +34,18 @@ function AuthCallback() {
       if (done) return;
       done = true;
       if (to === "/dashboard") {
-        const stored = sessionStorage.getItem("study-notes:post-auth-next");
         sessionStorage.removeItem("study-notes:post-auth-next");
-        if (stored && stored.startsWith("/") && !stored.startsWith("//")) {
-          window.location.replace(stored);
-          return;
-        }
       }
       void navigate({ to, replace: true });
     };
 
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) finish("/dashboard");
+      if (session) finish(postAuthDestination());
     });
 
     void supabase.auth.getSession().then(({ data }) => {
-      if (data.session) finish("/dashboard");
+      if (data.session) finish(postAuthDestination());
     });
 
     const timeout = setTimeout(() => {

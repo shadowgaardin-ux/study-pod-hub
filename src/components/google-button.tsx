@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
+import { postAuthDestination } from "@/lib/auth-navigation";
 
 /** Hosts served by Lovable, where the managed /~oauth broker exists. */
 export function isLovableHost(hostname: string) {
@@ -18,16 +20,15 @@ export function isLovableHost(hostname: string) {
 
 export function GoogleButton({
   label = "Continue with Google",
-  next,
 }: {
   label?: string;
-  next?: string | undefined;
 }) {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   async function handleClick() {
     setLoading(true);
-    if (next) sessionStorage.setItem("study-notes:post-auth-next", next);
+    sessionStorage.removeItem("study-notes:post-auth-next");
 
     // Off Lovable hosting (e.g. Vercel) the /~oauth broker route doesn't exist,
     // so go straight through the auth backend's own Google flow.
@@ -55,7 +56,7 @@ export function GoogleButton({
     if (result.redirected) return;
 
     // Session already set by the helper (preview/popup flow).
-    window.location.href = next ?? "/dashboard";
+    void navigate({ to: postAuthDestination(), replace: true });
   }
 
 
