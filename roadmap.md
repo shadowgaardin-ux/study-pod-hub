@@ -9,6 +9,7 @@
 - [ ] Verify redirects and independent Vercel deployment; remote deployment requires updated deployment access.
 
 # Security audit
-- [ ] Close membership, join-request, private-content, storage and plan privilege bypasses; test permitted and denied actions.
-- [ ] Harden transcription and Paystack verification; run regression tests and verify signed-in/signed-out flows.
-- [ ] Report audit coverage, build status and remaining limits; deep scan result pending external completion.
+- [x] Close membership, join-request, private-content, storage and plan privilege bypasses; verify direct API denials and Free recording quota.
+- [x] Harden transcription and Paystack verification; run regression tests and verify signed-in/signed-out flows.
+- [x] Report audit coverage, current build status and remaining risks in SECURITY_AUDIT.md; deep scan reviewed.
+- [ ] Verify paid-plan activation and two-account pod approval lifecycle; requires approved payment test and second-account authorization.
