@@ -13,6 +13,8 @@ import { usePods } from "@/lib/queries";
 export const Route = createFileRoute("/_authenticated/pods")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "My Pods — Study Notes" },
       { name: "description", content: "Every study pod you have created or joined." },
       { property: "og:title", content: "My Pods — Study Notes" },

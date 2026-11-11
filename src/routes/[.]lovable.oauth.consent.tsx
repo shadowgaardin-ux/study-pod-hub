@@ -38,6 +38,8 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
 
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Authorize an app — Study Notes" },
       { name: "description", content: "Approve or deny an app that wants to use Study Notes as you." },
       { name: "robots", content: "noindex" },

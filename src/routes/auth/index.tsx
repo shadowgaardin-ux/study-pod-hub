@@ -28,6 +28,8 @@ export const Route = createFileRoute("/auth/")({
   validateSearch: authSearchSchema.parse,
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Log in or sign up — Study Notes" },
       {
         name: "description",

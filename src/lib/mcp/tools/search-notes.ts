@@ -2,6 +2,7 @@ import { ToolError, defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 
 import { supabaseForUser } from "../supabase";
+import { searchPattern } from "../../search-export-security";
 
 export default defineTool({
   name: "search_notes",
@@ -14,7 +15,7 @@ export default defineTool({
   handler: async ({ query }, ctx) => {
     if (!ctx.isAuthenticated()) throw new ToolError("Not authenticated");
     const supabase = supabaseForUser(ctx);
-    const pattern = `%${query.replace(/[%_]/g, "")}%`;
+    const pattern = searchPattern(query);
     const { data, error } = await supabase
       .from("notes")
       .select("id, title, summary, transcript, pod_id, created_at")

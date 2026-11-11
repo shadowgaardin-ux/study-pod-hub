@@ -19,6 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Settings — Study Notes" },
       { name: "description", content: "Update your profile, avatar and appearance preferences." },
       { property: "og:title", content: "Settings — Study Notes" },

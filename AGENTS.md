@@ -15,3 +15,5 @@
 - Select Nitro's Vercel preset only when VERCEL=1, preserving the existing Lovable deployment target elsewhere.
 - Enforce pod membership, immutable ownership, recording counts and attachment access at the database/storage boundary; browser checks alone are bypassable.
 - Scope recording recovery to its authenticated owner and authorize note/audio pairs before transcription; shared devices and mismatched IDs must not leak private recordings.
+- Apply verified payments through the service-role-only atomic database function; payment insertion and tier activation must succeed or roll back together.
+- Quote search filter literals and neutralize spreadsheet formula cells in exports; user content must not become query syntax or executable formulas.

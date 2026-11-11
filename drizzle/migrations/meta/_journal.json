@@ -22,6 +22,20 @@
       "when": 1794349540604,
       "tag": "0002_harden_study_authorization",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794377961892,
+      "tag": "0003_atomic_billing_and_upload_validation",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794378193712,
+      "tag": "0004_join_request_target_validation",
+      "breakpoints": true
     }
   ]
 }
