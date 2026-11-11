@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { safeCsvCell } from "@/lib/search-export-security";
 
 export interface Flashcard {
   id: string;
@@ -34,7 +35,7 @@ type Rating = "easy" | "medium" | "hard";
 const INTERVAL_DAYS: Record<Rating, number> = { hard: 0.007, medium: 1, easy: 4 };
 
 function exportCards(cards: Flashcard[], kind: "txt" | "csv", name: string) {
-  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const esc = safeCsvCell;
   const body =
     kind === "csv"
       ? ["front,back,deck", ...cards.map((c) => [c.front, c.back, c.deck_name].map(esc).join(","))].join("\n")

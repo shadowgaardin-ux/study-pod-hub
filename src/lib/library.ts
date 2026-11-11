@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { searchPattern } from "./search-export-security";
 
 export interface LibraryNote {
   id: string;
@@ -74,14 +75,14 @@ export function useGlobalSearch(term: string, userId: string | undefined) {
     queryKey: ["global-search", q, userId],
     enabled: Boolean(userId) && q.length >= 2,
     queryFn: async (): Promise<SearchResult[]> => {
-      const like = `%${q}%`;
+      const like = searchPattern(q);
       const [notes, pods, cards] = await Promise.all([
         supabase
           .from("notes")
           .select("id, title, pod_id, transcript, summary")
           .or(`title.ilike.${like},transcript.ilike.${like},summary.ilike.${like}`)
           .limit(8),
-        supabase.from("pods").select("id, name, description").ilike("name", like).limit(6),
+        supabase.from("pods").select("id, name, description").ilike("name", `%${q}%`).limit(6),
         supabase
           .from("flashcards")
           .select("id, deck_name, front, pod_id")
