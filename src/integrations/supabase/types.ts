@@ -455,6 +455,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_verified_payment: {
+        Args: { _item: string; _reference: string; _user_id: string }
+        Returns: Json
+      }
       can_read_note_file: { Args: { _path: string }; Returns: boolean }
       discover_pods: {
         Args: { _search?: string }
