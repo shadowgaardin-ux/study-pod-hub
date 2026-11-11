@@ -15,6 +15,8 @@ export const Route = createFileRoute("/join")({
   validateSearch: z.object({ code: z.string().optional() }),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Join a study pod — Study Notes" },
       { name: "description", content: "Use an invite link or code to join a Study Notes pod." },
       { property: "og:title", content: "Join a study pod — Study Notes" },

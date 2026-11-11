@@ -22,6 +22,8 @@ import { MAX_SEMESTER_PASS, SEMESTER_PASS, TIER_ORDER, TIER_PLANS, planFor } fro
 export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Billing — Study Notes" },
       { name: "description", content: "Manage your Study Notes plan and upgrade for more pods." },
       { property: "og:title", content: "Billing — Study Notes" },

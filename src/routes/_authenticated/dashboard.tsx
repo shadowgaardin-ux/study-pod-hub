@@ -35,6 +35,8 @@ import { UNLIMITED, limitLabel, planFor } from "@/lib/tiers";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Dashboard — Study Notes" },
       { name: "description", content: "Your study pods, usage and shared course material." },
       { property: "og:title", content: "Dashboard — Study Notes" },
