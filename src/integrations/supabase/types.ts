@@ -460,6 +460,7 @@ export type Database = {
         Returns: Json
       }
       can_read_note_file: { Args: { _path: string }; Returns: boolean }
+      can_request_pod: { Args: { _pod_id: string }; Returns: boolean }
       discover_pods: {
         Args: { _search?: string }
         Returns: {
