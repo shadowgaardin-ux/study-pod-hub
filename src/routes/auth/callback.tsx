@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { postAuthDestination } from "@/lib/auth-navigation";
+import { postAuthDestination, takePendingPlan } from "@/lib/auth-navigation";
 
 export const Route = createFileRoute("/auth/callback")({
   ssr: false,
@@ -37,6 +37,12 @@ function AuthCallback() {
       done = true;
       if (to === "/dashboard") {
         sessionStorage.removeItem("study-notes:post-auth-next");
+        // A paid plan chosen before Google sign-in continues to checkout.
+        const pendingPlan = takePendingPlan();
+        if (pendingPlan) {
+          void navigate({ to: "/billing", search: { signup_plan: pendingPlan }, replace: true });
+          return;
+        }
       }
       void navigate({ to, replace: true });
     };

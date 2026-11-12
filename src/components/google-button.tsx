@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
-import { postAuthDestination } from "@/lib/auth-navigation";
+import { postAuthDestination, takePendingPlan } from "@/lib/auth-navigation";
 
 /** Hosts served by Lovable, where the managed /~oauth broker exists. */
 export function isLovableHost(hostname: string) {
@@ -56,6 +56,11 @@ export function GoogleButton({
     if (result.redirected) return;
 
     // Session already set by the helper (preview/popup flow).
+    const pendingPlan = takePendingPlan();
+    if (pendingPlan) {
+      void navigate({ to: "/billing", search: { signup_plan: pendingPlan }, replace: true });
+      return;
+    }
     void navigate({ to: postAuthDestination(), replace: true });
   }
 
