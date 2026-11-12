@@ -30,7 +30,11 @@ export const Route = createFileRoute("/_authenticated/billing")({
       { property: "og:description", content: "Manage your Study Notes plan and upgrade for more pods." },
     ],
   }),
-  validateSearch: z.object({ reference: z.string().optional(), trxref: z.string().optional() }),
+  validateSearch: z.object({
+    reference: z.string().optional(),
+    trxref: z.string().optional(),
+    signup_plan: z.enum(["Pro", "Max"]).optional(),
+  }),
   component: BillingPage,
 });
 
@@ -44,8 +48,11 @@ function BillingPage() {
   const [pending, setPending] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const handled = useRef(false);
+  const autoStarted = useRef(false);
 
   const reference = search.reference ?? search.trxref;
+  const signupPlan = search.signup_plan;
+
   useEffect(() => {
     if (!reference || handled.current) return;
     handled.current = true;
@@ -55,16 +62,31 @@ function BillingPage() {
         if (res.ok) {
           toast.success(`Payment confirmed — you're on ${res.tier}!`);
           await refreshProfile();
+          // Paid-plan signup: payment verified, continue to the dashboard.
+          if (signupPlan) {
+            void navigate({ to: "/dashboard", replace: true });
+            return;
+          }
         } else {
           toast.error("Payment was not completed.");
         }
-      })
-      .catch((e: unknown) => toast.error(e instanceof Error ? e.message : "Could not confirm payment"))
-      .finally(() => {
-        setConfirming(false);
         void navigate({ to: "/billing", search: {}, replace: true });
-      });
-  }, [reference, confirm, refreshProfile, navigate]);
+      })
+      .catch((e: unknown) => {
+        toast.error(e instanceof Error ? e.message : "Could not confirm payment");
+        void navigate({ to: "/billing", search: {}, replace: true });
+      })
+      .finally(() => setConfirming(false));
+  }, [reference, signupPlan, confirm, refreshProfile, navigate]);
+
+  // Paid-plan signup lands here: start checkout for the chosen plan once.
+  useEffect(() => {
+    if (!signupPlan || !profile || reference || autoStarted.current) return;
+    if (profile.tier === signupPlan) return; // already active (e.g. webhook beat us)
+    autoStarted.current = true;
+    void handleUpgrade(signupPlan === "Max" ? "max_monthly" : "pro_monthly");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signupPlan, profile, reference]);
 
   async function handleUpgrade(item: "pro_monthly" | "max_monthly" | "pro_semester" | "max_semester") {
     setPending(item);
