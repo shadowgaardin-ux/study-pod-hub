@@ -116,6 +116,14 @@ function BillingPage() {
         ) : null}
       </div>
 
+      {signupPlan && !confirming ? (
+        <p className="rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground">
+          Almost there — complete payment to activate your{" "}
+          <span className="font-semibold">{signupPlan}</span> plan. If you skip it, your account
+          stays on Free and you can upgrade here any time.
+        </p>
+      ) : null}
+
       <div className="grid gap-4 md:grid-cols-3">
         {TIER_ORDER.map((tier) => {
           const plan = TIER_PLANS[tier];
