@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { postAuthDestination } from "@/lib/auth-navigation";
+import { postAuthDestination, rememberPendingPlan, takePendingPlan } from "@/lib/auth-navigation";
 import { supabase } from "@/integrations/supabase/client";
 
 const SKIP_EMAIL_CONFIRMATION = import.meta.env["VITE_SKIP_EMAIL_CONFIRMATION"] === "true";
@@ -55,8 +55,20 @@ function AuthPage() {
   const [pendingEmail, setPendingEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // A paid plan picked on /onboard/plan must survive the whole auth flow
+  // (including the Google OAuth round-trip), so keep it in sessionStorage.
+  useEffect(() => {
+    rememberPendingPlan(plan);
+  }, [plan]);
+
   const goAfterAuth = useCallback(() => {
     sessionStorage.removeItem("study-notes:post-auth-next");
+    const pendingPlan = takePendingPlan();
+    if (pendingPlan) {
+      // Paid-plan signup: continue straight to checkout, not the dashboard.
+      void navigate({ to: "/billing", search: { signup_plan: pendingPlan }, replace: true });
+      return;
+    }
     void navigate({ to: postAuthDestination(), replace: true });
   }, [navigate]);
 
