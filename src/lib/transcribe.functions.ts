@@ -47,41 +47,12 @@ export const transcribeNote = createServerFn({ method: "POST" })
     const ext = data.audioPath.split(".").pop()?.toLowerCase() ?? "webm";
     const format = ["mp3", "wav", "m4a", "ogg", "webm", "mp4"].includes(ext) ? ext : "webm";
 
-    const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) throw new Error("AI service is not configured");
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3.8-flash",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Transcribe this lecture recording verbatim. Output only the transcript text, no commentary.",
-              },
-              { type: "input_audio", input_audio: { data: base64, format } },
-            ],
-          },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      console.error("Transcription failed", response.status);
-      throw new Error(response.status === 429 ? "AI is busy — try again in a minute" : response.status === 402 ? "AI credits have run out" : "Transcription failed — try again");
-    }
-
-    const result = (await response.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const transcript = result.choices?.[0]?.message?.content?.trim();
+    const { transcribeAudioBase64 } = await import("./ai-provider.server");
+    const transcript = await transcribeAudioBase64(
+      base64,
+      format,
+      "Transcribe this lecture recording verbatim. Output only the transcript text, no commentary.",
+    );
     if (!transcript) throw new Error("The AI returned an empty transcript");
 
     const { error: updateError } = await supabase
