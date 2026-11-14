@@ -38,7 +38,7 @@ const ACTIONS: { key: Action; label: string; icon: typeof List }[] = [
   { key: "quiz", label: "Create quiz questions", icon: HelpCircle },
 ];
 
-export function AiAssistant() {
+export function AiAssistant({ inline = false }: { inline?: boolean }) {
   const [open, setOpen] = useState(false);
   const [noteId, setNoteId] = useState("");
   const [action, setAction] = useState<Action | null>(null);
@@ -80,14 +80,23 @@ export function AiAssistant() {
 
   return (
     <>
-      <Button
+      {inline ? (
+        <section className="space-y-4 border-t border-border pt-6">
+          <h2 className="flex items-center gap-2 text-lg font-semibold tracking-normal">
+            <Sparkles className="size-4 text-primary" /> AI Assistant
+          </h2>
+          <Button variant="outline" onClick={() => setOpen(true)} className="w-full justify-between" aria-label="Open AI assistant">
+            Study with AI <Sparkles className="size-4" />
+          </Button>
+        </section>
+      ) : <Button
         onClick={() => setOpen(true)}
         size="icon"
         aria-label="Open AI assistant"
         className="fixed right-5 bottom-5 z-40 size-14 rounded-full shadow-[var(--shadow-lift)] transition-transform hover:scale-105"
       >
         <Sparkles className="size-6" />
-      </Button>
+      </Button>}
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-md">

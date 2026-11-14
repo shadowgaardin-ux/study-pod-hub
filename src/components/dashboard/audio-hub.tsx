@@ -325,16 +325,15 @@ export function AudioHub({
   }
 
   return (
-    <Card className="border-primary/25 bg-gradient-to-br from-accent/50 to-background">
-      <CardContent className="flex flex-col gap-4 pt-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-          <div className="grow space-y-2">
-            <p className="display text-lg font-semibold">Audio capture hub</p>
-            <p className="text-sm text-muted-foreground">
-              Record the lecture live or drop in a file. It saves to your private library by default —
-              share it to a pod whenever you're ready.
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2">
+    <Card className="border-border bg-card shadow-sm">
+      <CardContent className="flex flex-col gap-5 p-5 sm:p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
+          <div className="min-w-0 grow space-y-4">
+            <div className="flex items-center gap-2">
+              <Mic className="size-4 text-primary" />
+              <h2 className="text-lg font-semibold tracking-normal">Lecture recording</h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
               <Select value={target} onValueChange={setTarget}>
                 <SelectTrigger>
                   <SelectValue placeholder="Save to…" />
@@ -354,8 +353,7 @@ export function AudioHub({
                 placeholder="Recording title (optional)"
               />
             </div>
-            <p className="text-xs text-muted-foreground">{UPLOAD_HINT}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               {plan.tier} plan: up to {plan.maxRecordingMinutes >= 60
                 ? `${plan.maxRecordingMinutes / 60} hour${plan.maxRecordingMinutes > 60 ? "s" : ""}`
                 : `${plan.maxRecordingMinutes} minutes`}{" "}
@@ -399,7 +397,7 @@ export function AudioHub({
             ) : null}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-3">
             {recording && (
               <span className="flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive">
                 <span className="size-2 animate-pulse rounded-full bg-destructive" />
@@ -413,12 +411,12 @@ export function AudioHub({
               onClick={recording ? stopRecording : () => void startRecording()}
               disabled={busy || (!recording && atRecordingLimit)}
               variant={recording ? "destructive" : "default"}
-              className="gap-2"
+              className="h-10 gap-2 px-5"
             >
               {recording ? <Square className="size-4" /> : <Mic className="size-4" />}
               {recording ? "Stop" : "Record"}
             </Button>
-            <Button variant="outline" className="gap-2" disabled={busy} asChild>
+            <Button variant="outline" className="h-10 gap-2 px-5" disabled={busy} asChild>
               <label className="cursor-pointer">
                 <Upload className="size-4" /> Upload
                 <input
@@ -441,6 +439,8 @@ export function AudioHub({
             </Button>
           </div>
         </div>
+
+        <p className="text-xs leading-relaxed text-muted-foreground">{UPLOAD_HINT}</p>
 
         {(recording || liveTranscript) && (
           <div className="space-y-1.5">

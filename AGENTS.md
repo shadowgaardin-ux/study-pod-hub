@@ -11,6 +11,7 @@
 
 - Payments use Paystack via server functions (src/lib/payments.functions.ts) plus a signed webhook at /api/public/paystack-webhook; plans are only changed server-side after verification — naira support, no Lovable paid-plan requirement.
 - Keep pod workspace presentation in its existing route and tab components, reusing the same queries and mutation handlers so visual updates do not alter access or data contracts.
+- Keep dashboard presentation on its existing route with the current queries and action handlers; use an inline AI entry there while retaining the shared assistant's default trigger elsewhere.
 - Use the shared post-auth destination for completed email and Google sign-ins, so auth redirects remain consistent.
 - Select Nitro's Vercel preset only when VERCEL=1, preserving the existing Lovable deployment target elsewhere.
 - Enforce pod membership, immutable ownership, recording counts and attachment access at the database/storage boundary; browser checks alone are bypassable.
