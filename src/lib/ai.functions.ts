@@ -4,25 +4,9 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 async function askJson(prompt: string): Promise<unknown> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) throw new Error("AI service is not configured");
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: "You are a study assistant. Always reply with valid JSON only." },
-        { role: "user", content: prompt },
-      ],
-    }),
-  });
-  if (response.status === 429) throw new Error("Too many AI requests — try again in a minute.");
-  if (response.status === 402) throw new Error("AI credits are used up for this workspace.");
-  if (!response.ok) throw new Error(`AI request failed (${response.status})`);
-  const result = (await response.json()) as { choices?: { message?: { content?: string } }[] };
-  const content = result.choices?.[0]?.message?.content ?? "{}";
+  const { generateText } = await import("./ai-provider.server");
+  const content =
+    (await generateText("You are a study assistant. Always reply with valid JSON only.", prompt, true)) || "{}";
   try {
     return JSON.parse(content.replace(/^```(?:json)?\s*|\s*```$/g, ""));
   } catch {
