@@ -125,7 +125,7 @@ export function NotesTab({ podId, userId }: { podId: string; userId: string | un
       });
       return;
     }
-    const { data, error } = await supabase.storage.from("pod-audio").createSignedUrl(path, 3600);
+    const { data, error } = await supabase.storage.from("pod-audio").createSignedUrl(path, 120);
     if (error || !data) {
       toast.error("Could not open audio");
       return;
