@@ -73,7 +73,7 @@ export function NoteViewer({
     let cancelled = false;
     void supabase.storage
       .from("pod-audio")
-      .createSignedUrl(note.audio_url, 3600)
+      .createSignedUrl(note.audio_url, 120)
       .then(({ data }) => {
         if (!cancelled && data) setAudioUrl(data.signedUrl);
       });

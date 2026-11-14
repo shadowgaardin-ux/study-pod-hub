@@ -56,7 +56,7 @@ export function useSignedUrl(path: string | null, download?: string) {
     queryFn: async () => {
       const { data, error } = await supabase.storage
         .from(CHAT_BUCKET)
-        .createSignedUrl(path!, 3600, download ? { download } : undefined);
+        .createSignedUrl(path!, 120, download ? { download } : undefined);
       if (error) throw error;
       return data.signedUrl;
     },
