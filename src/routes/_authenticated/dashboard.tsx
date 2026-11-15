@@ -8,7 +8,6 @@ import {
   Library,
   Mic,
   Plus,
-  Sparkles,
   Users,
 } from "lucide-react";
 import { useRef, useState } from "react";
