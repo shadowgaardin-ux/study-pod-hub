@@ -1,6 +1,6 @@
 # Dashboard polish
-- [ ] Simplify welcome/actions, recording presentation, workspace navigation, recent activity, usage and AI entry without changing operations.
-- [ ] Verify signed-in desktop, mobile and dark-mode dashboard and automatic build.
+- [x] Simplify welcome/actions, recording presentation, workspace navigation, recent activity, usage and AI entry without changing operations.
+- [x] Verify signed-in desktop, mobile and dark-mode dashboard and automatic build.
 
 # Pod workspace polish
 - [x] Polish pod header and section navigation.
