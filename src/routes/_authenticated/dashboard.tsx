@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
-  BookOpen,
+  ChevronDown,
   Compass,
   FileAudio,
   FileText,
@@ -9,7 +9,6 @@ import {
   Mic,
   Plus,
   Sparkles,
-  UserPlus,
   Users,
 } from "lucide-react";
 import { useRef, useState } from "react";
@@ -22,7 +21,7 @@ import { PodCard } from "@/components/pods/pod-card";
 import { CreatePodDialog, JoinPodDialog } from "@/components/pods/pod-dialogs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -57,7 +56,7 @@ function Meter({ label, used, limit }: { label: string; used: number; limit: num
           {used} / {limitLabel(limit)}
         </span>
       </div>
-      <Progress value={pct} />
+      {limit !== UNLIMITED ? <Progress value={pct} className="h-1.5" aria-label={`${label} usage`} /> : null}
     </div>
   );
 }
@@ -65,43 +64,22 @@ function Meter({ label, used, limit }: { label: string; used: number; limit: num
 function QuickAction({
   icon: Icon,
   title,
-  description,
   onClick,
 }: {
   icon: typeof Mic;
   title: string;
-  description: string;
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      className="group surface flex items-center gap-4 p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
+      variant={title === "Record Lecture" ? "default" : "outline"}
+      className="h-12 justify-center gap-3 px-5 shadow-none"
     >
-      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-        <Icon className="size-5" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold">{title}</span>
-        <span className="block truncate text-xs text-muted-foreground">{description}</span>
-      </span>
-      <ArrowRight className="size-4 shrink-0 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-    </button>
-  );
-}
-
-function StatPill({ icon: Icon, label, value }: { icon: typeof Users; label: string; value: number }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
-      <span className="grid size-9 place-items-center rounded-lg bg-secondary text-secondary-foreground">
-        <Icon className="size-4" />
-      </span>
-      <div>
-        <p className="display text-xl leading-none font-semibold">{value}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{label}</p>
-      </div>
-    </div>
+      <Icon className="size-4" />
+      {title}
+    </Button>
   );
 }
 
@@ -125,154 +103,102 @@ function DashboardPage() {
   const recentNotes = (personalNotes.data ?? []).slice(0, 3);
 
   function goToRecording() {
-    recordRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    recordRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
   }
 
   function goToLibrary() {
     setActiveTab("library");
     requestAnimationFrame(() => {
-      document.getElementById("dashboard-tabs")?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("dashboard-tabs")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
     });
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 pb-6 sm:space-y-12">
       {/* ── Welcome hero ─────────────────────────────────────────── */}
-      <section className="rise-in relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-24 -right-24 size-64 rounded-full bg-primary/10 blur-3xl"
-        />
-        <div className="relative flex flex-wrap items-end justify-between gap-6">
-          <div className="max-w-xl space-y-3">
-            <Badge variant="secondary" className="rounded-full px-3 py-1">
-              <Sparkles className="size-3.5" /> {plan.tier} plan
-            </Badge>
-            <h1 className="display text-3xl font-semibold tracking-tight sm:text-4xl">
+      <section className="space-y-7 pt-2 sm:pt-4">
+          <div className="max-w-2xl space-y-3">
+            <p className="text-xs font-medium uppercase tracking-normal text-muted-foreground">Your study workspace</p>
+            <h1 className="text-3xl leading-tight font-semibold tracking-normal sm:text-4xl">
               {greeting}
             </h1>
-            <p className="text-muted-foreground">
-              Ready to make progress today? Record a lecture, tidy your notes, or pick up a
-              conversation in your pods.
+            <p className="text-base text-muted-foreground">
+              Ready to make progress today?
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={() => setJoinOpen(true)} variant="outline">
-              <UserPlus className="size-4" /> Join pod
-            </Button>
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="size-4" /> Create pod
-            </Button>
-          </div>
-        </div>
-
-        <div className="relative mt-7 grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-3 sm:max-w-2xl">
           <QuickAction
             icon={Mic}
             title="Record Lecture"
-            description="Capture audio with live transcription"
             onClick={goToRecording}
           />
           <QuickAction
             icon={FileText}
             title="Create Note"
-            description="Start from a recording or a blank page"
             onClick={goToLibrary}
           />
           <QuickAction
             icon={Users}
             title="Join Study Pod"
-            description="Enter an invite code from a classmate"
             onClick={() => setJoinOpen(true)}
           />
         </div>
       </section>
 
-      {/* ── Activity at a glance (real counts only) ──────────────── */}
-      <section className="rise-in-late grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatPill icon={Users} label="Study pods" value={usage.data?.pods ?? 0} />
-        <StatPill icon={FileText} label="Notes" value={usage.data?.notes ?? 0} />
-        <StatPill icon={BookOpen} label="Flashcards" value={usage.data?.flashcards ?? 0} />
-        <StatPill icon={FileAudio} label="Recordings" value={usage.data?.recordings ?? 0} />
-      </section>
-
-      {/* ── Plan usage ───────────────────────────────────────────── */}
-      <Card className="rise-in-late">
-        <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
-          <div>
-            <CardTitle className="display text-lg">{plan.tier} plan usage</CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">{plan.tagline}</p>
-          </div>
-          {plan.tier === "Free" ? (
-            <Button asChild variant="outline" size="sm">
-              <a href="/billing">Upgrade</a>
-            </Button>
-          ) : null}
-        </CardHeader>
-        <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <Meter label="Pods" used={usage.data?.pods ?? 0} limit={plan.maxPods} />
-          <Meter label="Notes" used={usage.data?.notes ?? 0} limit={plan.maxNotes} />
-          <Meter label="Flashcards" used={usage.data?.flashcards ?? 0} limit={plan.maxFlashcards} />
-          <Meter label="Recordings" used={usage.data?.recordings ?? 0} limit={plan.maxRecordings} />
-        </CardContent>
-      </Card>
-
       {/* ── Recording hub ────────────────────────────────────────── */}
-      <div ref={recordRef} className="rise-in-later scroll-mt-20">
+      <div ref={recordRef} className="scroll-mt-24">
         <AudioHub pods={pods.data} userId={user?.id} />
       </div>
 
-      {/* ── Recent from your library ─────────────────────────────── */}
-      <section className="rise-in-later space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="display text-xl font-semibold">Recent notes & recordings</h2>
+      <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,1fr)_260px] xl:gap-10">
+      <div className="min-w-0 space-y-10">
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-xl font-semibold tracking-normal">Recent activity</h2>
           {recentNotes.length ? (
             <Button variant="ghost" size="sm" onClick={goToLibrary}>
-              View library <ArrowRight className="size-4" />
+              View all <ArrowRight className="size-4" />
             </Button>
           ) : null}
         </div>
 
         {personalNotes.isLoading ? (
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="space-y-3">
             {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="h-28 rounded-xl" />
+              <Skeleton key={i} className="h-20 rounded-md" />
             ))}
           </div>
         ) : recentNotes.length ? (
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="divide-y divide-border border-y border-border">
             {recentNotes.map((note) => (
-              <button
+              <Button
                 key={note.id}
                 type="button"
                 onClick={goToLibrary}
-                className="surface group flex flex-col gap-2 p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
+                variant="ghost"
+                className="flex h-auto min-h-24 w-full items-center justify-start gap-4 rounded-none px-2 py-4 text-left whitespace-normal"
               >
-                <div className="flex items-center gap-2.5">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-md bg-secondary text-muted-foreground">
                     {note.audio_url ? <FileAudio className="size-4" /> : <FileText className="size-4" />}
                   </span>
-                  <p className="truncate text-sm font-medium">{note.title}</p>
-                </div>
-                <p className="line-clamp-2 text-xs text-muted-foreground">
+                <span className="min-w-0 flex-1 space-y-1">
+                  <span className="block truncate text-sm font-medium">{note.title}</span>
+                <span className="line-clamp-1 text-xs font-normal text-muted-foreground">
                   {note.transcript || note.summary || "No transcript yet"}
-                </p>
-                <p className="mt-auto text-[11px] text-muted-foreground">
+                </span>
+                <span className="block text-xs font-normal text-muted-foreground">
                   {new Date(note.created_at).toLocaleDateString()}
-                </p>
-              </button>
+                </span>
+                </span>
+                <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+              </Button>
             ))}
           </div>
         ) : (
           <EmptyState
             icon={Library}
             title="Nothing saved yet"
-            description="Your recordings and notes will appear here. Record your first lecture to get started."
-            action={
-              <Button onClick={goToRecording} size="sm">
-                <Mic className="size-4" /> Record a lecture
-              </Button>
-            }
+            description="Your personal notes and recordings."
           />
         )}
       </section>
@@ -281,13 +207,13 @@ function DashboardPage() {
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="rise-in-later space-y-6"
+        className="min-w-0 space-y-6 scroll-mt-24"
         id="dashboard-tabs"
       >
-        <TabsList className="grid w-full grid-cols-3 sm:w-auto">
-          <TabsTrigger value="active">My Active Pods</TabsTrigger>
-          <TabsTrigger value="library">Personal Library</TabsTrigger>
-          <TabsTrigger value="discover">Discover</TabsTrigger>
+        <TabsList className="grid h-auto w-full grid-cols-3 rounded-none border-b border-border bg-transparent p-0">
+          <TabsTrigger value="active" className="rounded-none border-b-2 border-transparent py-3 text-xs shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:text-sm">Study Pods</TabsTrigger>
+          <TabsTrigger value="library" className="rounded-none border-b-2 border-transparent py-3 text-xs shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:text-sm">My Library</TabsTrigger>
+          <TabsTrigger value="discover" className="rounded-none border-b-2 border-transparent py-3 text-xs shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:text-sm">Discover</TabsTrigger>
         </TabsList>
 
         <TabsContent value="library">
@@ -296,25 +222,20 @@ function DashboardPage() {
 
         <TabsContent value="active" className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="display text-xl font-semibold">Your pods</h2>
-            <div className="flex gap-2">
-              <Button onClick={() => setJoinOpen(true)} variant="outline" size="sm">
-                <UserPlus className="size-4" /> Join
+            <h2 className="text-xl font-semibold tracking-normal">Your study pods</h2>
+              <Button onClick={() => setCreateOpen(true)} variant="outline" size="sm">
+                <Plus className="size-4" /> Create pod
               </Button>
-              <Button onClick={() => setCreateOpen(true)} size="sm">
-                <Plus className="size-4" /> Create
-              </Button>
-            </div>
           </div>
 
           {pods.isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               {[0, 1, 2].map((i) => (
-                <Skeleton key={i} className="h-32 rounded-xl" />
+                <Skeleton key={i} className="h-32 rounded-md" />
               ))}
             </div>
           ) : pods.data?.length ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               {pods.data.map((pod) => (
                 <PodCard key={pod.id} pod={pod} />
               ))}
@@ -324,16 +245,6 @@ function DashboardPage() {
               icon={Compass}
               title="No pods yet"
               description="Create one for your course, or join with an invite code from a classmate."
-              action={
-                <div className="flex gap-2">
-                  <Button onClick={() => setCreateOpen(true)} size="sm">
-                    Create your first pod
-                  </Button>
-                  <Button variant="outline" onClick={() => setJoinOpen(true)} size="sm">
-                    Join a pod
-                  </Button>
-                </div>
-              }
             />
           )}
         </TabsContent>
@@ -342,10 +253,35 @@ function DashboardPage() {
           <DiscoverTab />
         </TabsContent>
       </Tabs>
+      </div>
+
+      <aside className="space-y-8 border-t border-border pt-8 xl:border-t-0 xl:border-l xl:pl-8 xl:pt-0">
+        <section className="space-y-5">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold tracking-normal">Plan usage</h2>
+            <Badge variant="secondary">{plan.tier}</Badge>
+          </div>
+          {usage.isLoading ? <Skeleton className="h-8" /> : <Meter label="Recordings" used={usage.data?.recordings ?? 0} limit={plan.maxRecordings} />}
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="group w-full justify-between px-0 text-muted-foreground">
+                All usage <ChevronDown className="size-4 transition-transform motion-reduce:transition-none group-data-[state=open]:rotate-180" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-5 pt-4">
+              <Meter label="Pods" used={usage.data?.pods ?? 0} limit={plan.maxPods} />
+              <Meter label="Notes" used={usage.data?.notes ?? 0} limit={plan.maxNotes} />
+              <Meter label="Flashcards" used={usage.data?.flashcards ?? 0} limit={plan.maxFlashcards} />
+            </CollapsibleContent>
+          </Collapsible>
+          {plan.tier === "Free" ? <Button asChild variant="link" size="sm" className="h-auto px-0"><Link to="/billing">Upgrade plan <ArrowRight className="size-4" /></Link></Button> : null}
+        </section>
+        <AiAssistant inline />
+      </aside>
+      </div>
 
       <CreatePodDialog open={createOpen} onOpenChange={setCreateOpen} userId={user?.id} />
       <JoinPodDialog open={joinOpen} onOpenChange={setJoinOpen} />
-      <AiAssistant />
     </div>
   );
 }
