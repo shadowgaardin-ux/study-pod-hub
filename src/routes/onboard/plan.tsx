@@ -1,5 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, BookOpen, Check } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
+
+import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -51,9 +53,11 @@ function PlanScreen() {
 
       <main className="mx-auto max-w-6xl px-5 pb-20">
         <div className="text-center">
-          <span className="mx-auto grid size-11 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <BookOpen className="size-5" />
-          </span>
+          <img
+            src={logoUrl}
+            alt="Study Notes Hub"
+            className="mx-auto h-12 w-auto dark:rounded-lg dark:bg-white dark:px-3 dark:py-2"
+          />
           <h1 className="display mt-4 text-3xl font-semibold sm:text-4xl">Choose your plan</h1>
           <p className="mt-3 text-muted-foreground">
             Start free and upgrade any time — your choice is saved to your profile at sign up.
