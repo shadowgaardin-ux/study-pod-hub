@@ -1,7 +1,8 @@
 /**
- * Server-only AI provider. Uses Google Gemini when GEMINI_API_KEY is set
- * (e.g. on Vercel); otherwise falls back to the Lovable AI gateway.
- * Keys are read inside calls and never sent to the browser.
+ * Server-only AI provider: Google Gemini via the server-side GEMINI_API_KEY.
+ * Used by transcription, summaries (bullet points), key terms, study questions,
+ * pod quizzes and the AI assistant. The key is read inside each call on the
+ * server and is never sent to the browser.
  */
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
@@ -9,17 +10,29 @@ function geminiModel() {
   return process.env["GEMINI_MODEL"]?.trim() || "gemini-2.5-flash";
 }
 
+function geminiKey(): string {
+  const key = process.env["GEMINI_API_KEY"]?.trim().replace(/^["']|["']$/g, "");
+  if (!key) {
+    console.error("GEMINI_API_KEY is not set in the server environment");
+    throw new Error("AI service is not configured (GEMINI_API_KEY missing on the server)");
+  }
+  return key;
+}
+
 function statusError(status: number): Error {
   if (status === 429) return new Error("AI is busy — try again in a minute.");
-  if (status === 402) return new Error("AI credits have run out.");
-  if (status === 401 || status === 403) return new Error("AI service key was rejected — check the server configuration.");
+  if (status === 400) return new Error("Gemini rejected the request — the audio or text may be unsupported.");
+  if (status === 401 || status === 403) return new Error("Gemini API key was rejected — check GEMINI_API_KEY.");
+  if (status === 404) return new Error("Gemini model not found — check GEMINI_MODEL.");
   return new Error(`AI request failed (${status})`);
 }
 
 type Part = { text: string } | { inline_data: { mime_type: string; data: string } };
 
-async function gemini(key: string, parts: Part[], system?: string, json = false): Promise<string> {
-  const res = await fetch(`${GEMINI_BASE}/${encodeURIComponent(geminiModel())}:generateContent`, {
+async function gemini(parts: Part[], system?: string, json = false): Promise<string> {
+  const key = geminiKey();
+  const model = geminiModel();
+  const res = await fetch(`${GEMINI_BASE}/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",
     headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -29,41 +42,27 @@ async function gemini(key: string, parts: Part[], system?: string, json = false)
     }),
   });
   if (!res.ok) {
-    console.error("Gemini request failed", res.status);
+    const detail = (await res.text().catch(() => "")).slice(0, 500);
+    console.error("Gemini request failed", { status: res.status, model, detail });
     throw statusError(res.status);
   }
-  const body = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-  return (body.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("").trim();
-}
-
-async function lovable(key: string, model: string, messages: unknown[], json = false): Promise<string> {
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model, messages, ...(json ? { response_format: { type: "json_object" } } : {}) }),
-  });
-  if (!res.ok) {
-    console.error("AI gateway request failed", res.status);
-    throw statusError(res.status);
+  const body = (await res.json()) as {
+    candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
+    promptFeedback?: { blockReason?: string };
+  };
+  const text = (body.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("").trim();
+  if (!text) {
+    console.error("Gemini returned no text", {
+      model,
+      finishReason: body.candidates?.[0]?.finishReason,
+      blockReason: body.promptFeedback?.blockReason,
+    });
   }
-  const body = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-  return body.choices?.[0]?.message?.content?.trim() ?? "";
-}
-
-function keys() {
-  const geminiKey = process.env["GEMINI_API_KEY"]?.trim();
-  const lovableKey = process.env["LOVABLE_API_KEY"]?.trim();
-  if (!geminiKey && !lovableKey) throw new Error("AI service is not configured");
-  return { geminiKey, lovableKey };
+  return text;
 }
 
 export async function generateText(system: string, prompt: string, json = false): Promise<string> {
-  const { geminiKey, lovableKey } = keys();
-  if (geminiKey) return gemini(geminiKey, [{ text: prompt }], system, json);
-  return lovable(lovableKey!, "google/gemini-3-flash-preview", [
-    { role: "system", content: system },
-    { role: "user", content: prompt },
-  ], json);
+  return gemini([{ text: prompt }], system, json);
 }
 
 const AUDIO_MIME: Record<string, string> = {
@@ -72,17 +71,8 @@ const AUDIO_MIME: Record<string, string> = {
 };
 
 export async function transcribeAudioBase64(base64: string, format: string, instruction: string): Promise<string> {
-  const { geminiKey, lovableKey } = keys();
-  if (geminiKey) {
-    return gemini(geminiKey, [
-      { text: instruction },
-      { inline_data: { mime_type: AUDIO_MIME[format] ?? "audio/webm", data: base64 } },
-    ]);
-  }
-  return lovable(lovableKey!, "google/gemini-3.8-flash", [
-    { role: "user", content: [
-      { type: "text", text: instruction },
-      { type: "input_audio", input_audio: { data: base64, format } },
-    ] },
+  return gemini([
+    { text: instruction },
+    { inline_data: { mime_type: AUDIO_MIME[format] ?? "audio/webm", data: base64 } },
   ]);
 }
