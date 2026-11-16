@@ -1,6 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  BookOpen,
   CreditCard,
   LayoutDashboard,
   LogOut,
@@ -10,6 +9,8 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
+
+import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
 
 import { GlobalSearch } from "@/components/dashboard/global-search";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -78,11 +79,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   const brand = (
-    <Link to="/dashboard" className="flex items-center gap-2 px-4 py-4">
-      <span className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground">
-        <BookOpen className="size-4" />
-      </span>
-      <span className="display text-base font-semibold">Study Notes</span>
+    <Link to="/dashboard" className="flex items-center px-4 py-4" aria-label="Study Notes Hub dashboard">
+      <img
+        src={logoUrl}
+        alt="Study Notes Hub"
+        className="h-9 w-auto dark:rounded-md dark:bg-white dark:px-2 dark:py-1"
+      />
     </Link>
   );
 

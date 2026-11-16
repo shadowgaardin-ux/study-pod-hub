@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { BookOpen } from "lucide-react";
 
+import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,11 +34,12 @@ function LandingPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground">
-              <BookOpen className="size-4" />
-            </span>
-            <span className="display text-lg font-semibold">Study Notes</span>
+          <Link to="/" className="flex items-center" aria-label="Study Notes Hub home">
+            <img
+              src={logoUrl}
+              alt="Study Notes Hub"
+              className="h-9 w-auto dark:rounded-md dark:bg-white dark:px-2 dark:py-1"
+            />
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />

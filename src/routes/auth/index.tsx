@@ -1,8 +1,10 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, BookOpen, MailCheck } from "lucide-react";
+import { ArrowLeft, MailCheck } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+
+import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
 
 import { GoogleButton } from "@/components/google-button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -197,11 +199,12 @@ function AuthPage() {
       <main className="flex flex-1 items-start justify-center px-5 pt-6 pb-16">
         <div className="w-full max-w-md">
           <div className="mb-8 flex flex-col items-center text-center">
-            <span className="grid size-11 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <BookOpen className="size-5" />
-            </span>
-            <h1 className="display mt-4 text-2xl font-semibold">Study Notes</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <img
+              src={logoUrl}
+              alt="Study Notes Hub"
+              className="h-14 w-auto dark:rounded-lg dark:bg-white dark:px-3 dark:py-2"
+            />
+            <p className="mt-3 text-sm text-muted-foreground">
               One shared workspace for your course group.
             </p>
           </div>
