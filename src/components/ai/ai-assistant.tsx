@@ -83,7 +83,7 @@ export function AiAssistant({ inline = false }: { inline?: boolean }) {
       {inline ? (
         <section className="space-y-4 border-t border-border pt-6">
           <h2 className="flex items-center gap-2 text-lg font-semibold tracking-normal">
-            <Sparkles className="size-4 text-primary" /> AI Assistant
+            <Sparkles className="size-4 text-ai" /> AI Assistant
           </h2>
           <Button variant="outline" onClick={() => setOpen(true)} className="w-full justify-between" aria-label="Open AI assistant">
             Study with AI <Sparkles className="size-4" />
@@ -102,7 +102,7 @@ export function AiAssistant({ inline = false }: { inline?: boolean }) {
         <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-md">
           <SheetHeader>
             <SheetTitle className="display flex items-center gap-2">
-              <Sparkles className="size-5 text-primary" /> AI assistant
+              <Sparkles className="size-5 text-ai" /> AI assistant
             </SheetTitle>
             <SheetDescription>
               Pick a recording or note, then run a quick action on it.
@@ -161,7 +161,7 @@ export function AiAssistant({ inline = false }: { inline?: boolean }) {
               <ul className="space-y-2 rounded-lg border border-border p-4 text-sm">
                 {results.map((line) => (
                   <li key={line} className="flex gap-2">
-                    <span className="text-primary">•</span>
+                    <span className="text-ai">•</span>
                     <span>{line}</span>
                   </li>
                 ))}
