@@ -7,7 +7,7 @@
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 function geminiModel() {
-  return process.env["GEMINI_MODEL"]?.trim() || "gemini-2.5-flash";
+  return process.env["GEMINI_MODEL"]?.trim() || "gemini-3.5-flash-lite";
 }
 
 function geminiKey(): string {
