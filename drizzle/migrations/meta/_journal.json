@@ -36,6 +36,13 @@
       "when": 1794378193712,
       "tag": "0004_join_request_target_validation",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794899409902,
+      "tag": "0005_fix_schema_specific_identity_guard",
+      "breakpoints": true
     }
   ]
 }

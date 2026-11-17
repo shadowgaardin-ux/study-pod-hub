@@ -225,7 +225,7 @@ export function NoteViewer({
 
           <div className="space-y-2">
             <h3 className="flex items-center gap-1.5 text-sm font-medium">
-              <Sparkles className="size-4 text-primary" /> Ask AI about this note
+              <Sparkles className="size-4 text-ai" /> Ask AI about this note
             </h3>
             <div className="grid grid-cols-3 gap-2">
               {ACTIONS.map(({ key, label, icon: Icon }) => (
