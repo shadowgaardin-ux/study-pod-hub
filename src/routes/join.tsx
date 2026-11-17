@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { BookOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
+import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -63,9 +63,11 @@ function JoinPage() {
     <div className="grid min-h-screen place-items-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
-          <span className="grid size-11 place-items-center rounded-xl bg-primary text-primary-foreground">
-            <BookOpen className="size-5" />
-          </span>
+          <img
+            src={logoUrl}
+            alt="Study Notes Hub"
+            className="h-10 w-auto dark:rounded-md dark:bg-white dark:px-2 dark:py-1"
+          />
           <CardTitle className="display text-2xl">Join a study pod</CardTitle>
           <CardDescription>
             {user
