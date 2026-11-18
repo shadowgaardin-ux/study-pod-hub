@@ -22,3 +22,5 @@
 - [x] Harden transcription and Paystack verification; run regression tests and verify signed-in/signed-out flows.
 - [x] Report audit coverage, current build status and remaining risks in SECURITY_AUDIT.md; deep scan reviewed.
 - [ ] Verify paid-plan activation and two-account pod approval lifecycle; requires approved payment test and second-account authorization.
+# Colour & motion across app
+- [x] Dashboard, pods, sidebar and recording panel colour/animation polish.

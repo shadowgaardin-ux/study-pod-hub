@@ -325,12 +325,12 @@ export function AudioHub({
   }
 
   return (
-    <Card className="border-border bg-card shadow-sm">
+    <Card className={`relative overflow-hidden border-border bg-card shadow-sm transition-shadow duration-300 before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-brand-gradient ${recording ? "recording-glow" : ""}`}>
       <CardContent className="flex flex-col gap-5 p-5 sm:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
           <div className="min-w-0 grow space-y-4">
             <div className="flex items-center gap-2">
-              <Mic className="size-4 text-primary" />
+              <span className={`relative grid size-9 place-items-center rounded-full bg-brand-gradient text-brand-foreground ${recording ? "mic-pulse" : ""}`}><Mic className="size-4" /></span>
               <h2 className="text-lg font-semibold tracking-normal">Lecture recording</h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -400,7 +400,11 @@ export function AudioHub({
           <div className="flex shrink-0 flex-wrap items-center gap-3">
             {recording && (
               <span className="flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive">
-                <span className="size-2 animate-pulse rounded-full bg-destructive" />
+                <span className="flex h-4 items-end gap-0.5" aria-hidden>
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <span key={i} className="eq-bar w-0.5 rounded-full bg-destructive" style={{ animationDelay: `${i * 120}ms` }} />
+                  ))}
+                </span>
                 {formatTimer(elapsed)}
                 <span className="text-xs font-normal">
                   · {formatTimer(remaining)} left

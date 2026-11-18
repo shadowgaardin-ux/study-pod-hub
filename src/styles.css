@@ -326,3 +326,32 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
 }
+
+@utility recording-glow {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--destructive) 40%, transparent),
+    0 10px 40px -10px color-mix(in oklab, var(--destructive) 45%, transparent);
+  animation: rec-breathe 2s ease-in-out infinite;
+}
+@utility mic-pulse {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid var(--brand-pink);
+    animation: mic-ring 1.4s ease-out infinite;
+  }
+}
+@utility eq-bar {
+  height: 30%;
+  animation: eq 0.9s ease-in-out infinite alternate;
+}
+@keyframes rec-breathe { 50% { box-shadow: 0 0 0 1px color-mix(in oklab, var(--destructive) 60%, transparent), 0 14px 50px -8px color-mix(in oklab, var(--destructive) 60%, transparent); } }
+@keyframes mic-ring { from { transform: scale(1); opacity: .9; } to { transform: scale(1.9); opacity: 0; } }
+@keyframes eq { from { height: 25%; } to { height: 100%; } }
+
+@layer base {
+  [data-slot="tabs-trigger"][data-state="active"] { color: var(--brand-purple); }
+  [data-slot="card"] { transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease; }
+  [data-slot="card"]:hover { border-color: color-mix(in oklab, var(--brand-purple) 25%, var(--color-border)); }
+}

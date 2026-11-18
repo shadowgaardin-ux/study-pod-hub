@@ -74,9 +74,9 @@ function PodWorkspacePage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
         <Link to="/dashboard"><ArrowLeft className="size-4" /> Dashboard</Link>
       </Button>
-      <header className="flex flex-wrap items-start justify-between gap-6 border-b border-border pb-6">
+      <header className="aurora flex flex-wrap items-start justify-between gap-6 rounded-2xl border border-border bg-card/60 p-5 shadow-card sm:p-6">
         <div className="flex min-w-0 flex-1 items-start gap-4">
-          <span className="grid size-14 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground sm:size-16"><BookOpen className="size-7" /></span>
+          <span className="grid size-14 shrink-0 place-items-center rounded-xl bg-brand-gradient text-brand-foreground shadow-lg logo-glow sm:size-16"><BookOpen className="size-7" /></span>
           <div className="min-w-0 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Study pod</span>

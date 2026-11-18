@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={() => setMobileOpen(false)}
             className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-brand-purple/20 [&>svg]:text-brand-purple"
                 : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
             }`}
           >
@@ -89,7 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background bg-[radial-gradient(60rem_30rem_at_100%_0%,var(--aurora-1),transparent_60%),radial-gradient(50rem_30rem_at_0%_100%,var(--aurora-2),transparent_60%)] bg-fixed">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
         {brand}
         {nav}

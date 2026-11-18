@@ -74,9 +74,9 @@ function QuickAction({
       type="button"
       onClick={onClick}
       variant={title === "Record Lecture" ? "default" : "outline"}
-      className="h-12 justify-center gap-3 px-5 shadow-none"
+      className="lift h-12 justify-center gap-3 px-5 shadow-none"
     >
-      <Icon className="size-4" />
+      <Icon className={`size-4 ${title === "Record Lecture" ? "" : title === "Create Note" ? "text-brand-teal" : "text-brand-purple"}`} />
       {title}
     </Button>
   );
@@ -115,11 +115,11 @@ function DashboardPage() {
   return (
     <div className="space-y-10 pb-6 sm:space-y-12">
       {/* ── Welcome hero ─────────────────────────────────────────── */}
-      <section className="space-y-7 pt-2 sm:pt-4">
+      <section className="aurora space-y-7 rounded-2xl border border-border/60 px-5 py-6 sm:px-8 sm:py-8">
           <div className="max-w-2xl space-y-3">
             <p className="text-xs font-medium uppercase tracking-normal text-muted-foreground">Your study workspace</p>
             <h1 className="text-3xl leading-tight font-semibold tracking-normal sm:text-4xl">
-              {greeting}
+              <span className="text-gradient">{greeting}</span>
             </h1>
             <p className="text-base text-muted-foreground">
               Ready to make progress today?
