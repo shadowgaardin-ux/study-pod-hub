@@ -188,7 +188,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-secondary/40">
+    <div className="aurora flex min-h-screen flex-col bg-secondary/40">
       <header className="flex items-center justify-between px-5 py-5">
         <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" /> Back home
@@ -202,7 +202,7 @@ function AuthPage() {
             <img
               src={logoUrl}
               alt="Study Notes Hub"
-              className="h-14 w-auto dark:rounded-lg dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-3 dark:py-2"
+              className="logo-glow h-14 w-auto dark:rounded-lg dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-3 dark:py-2"
             />
             <p className="mt-3 text-sm text-muted-foreground">
               One shared workspace for your course group.
@@ -210,7 +210,7 @@ function AuthPage() {
           </div>
 
           {view === "verify" && (
-            <div className="surface p-7 text-center">
+            <div className="surface p-7 backdrop-blur-sm text-center">
               <MailCheck className="mx-auto size-9 text-primary" />
               <h2 className="mt-4 text-lg font-semibold">Check your email</h2>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -229,7 +229,7 @@ function AuthPage() {
           )}
 
           {view === "forgot" && (
-            <div className="surface p-7">
+            <div className="surface p-7 backdrop-blur-sm">
               <h2 className="text-lg font-semibold">Reset your password</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 We'll email you a link to choose a new password.
@@ -250,7 +250,7 @@ function AuthPage() {
           )}
 
           {view === "auth" && (
-            <div className="surface p-7">
+            <div className="surface p-7 backdrop-blur-sm">
               {plan && (
                 <p className="mb-5 rounded-md bg-accent px-3 py-2 text-center text-sm text-accent-foreground">
                   You picked the <span className="font-semibold">{plan}</span> plan — create your

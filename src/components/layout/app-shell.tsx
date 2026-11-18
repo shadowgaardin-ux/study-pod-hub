@@ -83,7 +83,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <img
         src={logoUrl}
         alt="Study Notes Hub"
-        className="h-9 w-auto dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
+        className="h-9 w-auto transition-transform duration-300 hover:scale-105 dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
       />
     </Link>
   );

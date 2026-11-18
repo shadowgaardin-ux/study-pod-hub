@@ -38,7 +38,7 @@ function LandingPage() {
             <img
               src={logoUrl}
               alt="Study Notes Hub"
-              className="h-9 w-auto dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
+              className="h-9 w-auto transition-transform duration-300 hover:scale-105 dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
             />
           </Link>
           <div className="flex items-center gap-2">
@@ -61,13 +61,13 @@ function LandingPage() {
         </div>
       </header>
 
-      <main className="flex flex-1 items-center">
+      <main className="aurora flex flex-1 items-center">
         <section className="mx-auto w-full max-w-3xl px-5 py-24 text-center">
-          <Badge variant="secondary" className="mb-6 rounded-full px-3 py-1">
+          <Badge variant="secondary" className="rise-in mb-6 rounded-full border border-brand-purple/30 bg-accent px-3 py-1 text-accent-foreground">
             Built for study groups
           </Badge>
           <h1 className="display text-4xl leading-tight font-semibold sm:text-6xl">
-            Turn lectures into notes, flashcards, and quizzes — together
+            Turn lectures into notes, flashcards, and quizzes — <span className="text-gradient">together</span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
             Study Notes gives your course group one shared workspace: lecture notes with audio,
@@ -80,6 +80,19 @@ function LandingPage() {
             <Button asChild size="lg" variant="outline">
               <Link to="/auth">Sign In</Link>
             </Button>
+          </div>
+          <div className="rise-in-later mt-14 grid gap-3 text-left sm:grid-cols-3">
+            {[
+              { title: "Record lectures", text: "Audio with automatic transcripts.", tone: "bg-brand-purple" },
+              { title: "Study together", text: "Shared notes, flashcards and chat.", tone: "bg-brand-teal" },
+              { title: "Practise smarter", text: "AI quizzes from your own notes.", tone: "bg-brand-amber" },
+            ].map((f) => (
+              <div key={f.title} className="surface lift p-5">
+                <span className={`mb-3 block h-1.5 w-10 rounded-full ${f.tone}`} />
+                <p className="font-semibold">{f.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{f.text}</p>
+              </div>
+            ))}
           </div>
         </section>
       </main>

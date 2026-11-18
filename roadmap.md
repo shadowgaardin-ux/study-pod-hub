@@ -1,6 +1,6 @@
 # Logo-matched polish and transcription repair
 - [ ] Correct schema-specific ownership guards without changing columns or access rules; verify note updates and ownership denials.
-- [ ] Polish shared theme and transitions while preserving layouts; check desktop, mobile and dark mode.
+- [x] Polish shared theme and transitions while preserving layouts; check desktop, mobile and dark mode.
 - [ ] Run relevant regression tests, inspect automatic build, and report Gemini/remote deployment verification limits.
 
 # Dashboard polish

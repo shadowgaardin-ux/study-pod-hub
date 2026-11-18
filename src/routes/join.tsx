@@ -60,13 +60,13 @@ function JoinPage() {
   }, [loading, user, code]);
 
   return (
-    <div className="grid min-h-screen place-items-center bg-background px-4">
+    <div className="aurora grid min-h-screen place-items-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
           <img
             src={logoUrl}
             alt="Study Notes Hub"
-            className="h-10 w-auto dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
+            className="logo-glow h-10 w-auto dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
           />
           <CardTitle className="display text-2xl">Join a study pod</CardTitle>
           <CardDescription>
