@@ -112,6 +112,7 @@
   --popover-foreground: oklch(0.95 0.006 250);
   --primary: oklch(0.83 0.06 270);
   --ai: oklch(0.78 0.13 300);
+  --logo-surface: oklch(0.955 0.018 290);
   --primary-foreground: oklch(0.18 0.02 258);
   --secondary: oklch(0.28 0.018 258);
   --secondary-foreground: oklch(0.93 0.006 250);

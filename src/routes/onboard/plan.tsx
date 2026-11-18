@@ -56,7 +56,7 @@ function PlanScreen() {
           <img
             src={logoUrl}
             alt="Study Notes Hub"
-            className="mx-auto h-12 w-auto dark:rounded-lg dark:bg-white dark:px-3 dark:py-2"
+            className="mx-auto h-12 w-auto dark:rounded-lg dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-3 dark:py-2"
           />
           <h1 className="display mt-4 text-3xl font-semibold sm:text-4xl">Choose your plan</h1>
           <p className="mt-3 text-muted-foreground">

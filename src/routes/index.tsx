@@ -38,7 +38,7 @@ function LandingPage() {
             <img
               src={logoUrl}
               alt="Study Notes Hub"
-              className="h-9 w-auto dark:rounded-md dark:bg-white dark:px-2 dark:py-1"
+              className="h-9 w-auto dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
             />
           </Link>
           <div className="flex items-center gap-2">

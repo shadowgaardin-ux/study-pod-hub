@@ -202,7 +202,7 @@ function AuthPage() {
             <img
               src={logoUrl}
               alt="Study Notes Hub"
-              className="h-14 w-auto dark:rounded-lg dark:bg-white dark:px-3 dark:py-2"
+              className="h-14 w-auto dark:rounded-lg dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-3 dark:py-2"
             />
             <p className="mt-3 text-sm text-muted-foreground">
               One shared workspace for your course group.
