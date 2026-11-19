@@ -187,6 +187,21 @@ export type Database = {
           },
         ]
       }
+      payment_activation_keys: {
+        Row: {
+          created_at: string
+          key_hash: string
+        }
+        Insert: {
+          created_at?: string
+          key_hash: string
+        }
+        Update: {
+          created_at?: string
+          key_hash?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -457,6 +472,15 @@ export type Database = {
     Functions: {
       apply_verified_payment: {
         Args: { _item: string; _reference: string; _user_id: string }
+        Returns: Json
+      }
+      apply_verified_payment_with_proof: {
+        Args: {
+          _item: string
+          _proof: string
+          _reference: string
+          _user_id: string
+        }
         Returns: Json
       }
       can_read_note_file: { Args: { _path: string }; Returns: boolean }

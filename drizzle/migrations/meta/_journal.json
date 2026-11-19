@@ -43,6 +43,13 @@
       "when": 1794899409902,
       "tag": "0005_fix_schema_specific_identity_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795120093042,
+      "tag": "0006_payment_activation_proof",
+      "breakpoints": true
     }
   ]
 }
