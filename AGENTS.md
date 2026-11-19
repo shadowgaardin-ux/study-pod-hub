@@ -19,3 +19,4 @@
 - Shared identity triggers must branch by table before referencing row fields; SQL boolean short-circuiting cannot safely guard fields absent from a record type.
 - Apply verified payments through the service-role-only atomic database function; payment insertion and tier activation must succeed or roll back together.
 - Quote search filter literals and neutralize spreadsheet formula cells in exports; user content must not become query syntax or executable formulas.
+- Plan activation uses the service-role RPC when SUPABASE_SERVICE_ROLE_KEY exists, else a proof-gated RPC (hashed PAYMENT_ACTIVATION_SECRET); non-Lovable hosts like Vercel lack the admin key.
