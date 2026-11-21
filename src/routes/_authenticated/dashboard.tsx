@@ -125,7 +125,7 @@ function DashboardPage() {
               Ready to make progress today?
             </p>
           </div>
-        <div className="grid gap-3 sm:grid-cols-3 sm:max-w-2xl">
+        <div className="stagger grid gap-3 sm:grid-cols-3 sm:max-w-2xl">
           <QuickAction
             icon={Mic}
             title="Record Lecture"
@@ -168,7 +168,7 @@ function DashboardPage() {
             ))}
           </div>
         ) : recentNotes.length ? (
-          <div className="divide-y divide-border border-y border-border">
+          <div className="stagger divide-y divide-border border-y border-border">
             {recentNotes.map((note) => (
               <Button
                 key={note.id}
@@ -177,7 +177,7 @@ function DashboardPage() {
                 variant="ghost"
                 className="flex h-auto min-h-24 w-full items-center justify-start gap-4 rounded-none px-2 py-4 text-left whitespace-normal"
               >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-md bg-secondary text-muted-foreground">
+                  <span className={`grid size-10 shrink-0 place-items-center rounded-md ${note.audio_url ? "bg-brand-pink/10 text-brand-pink" : "bg-brand-sky/10 text-brand-sky"}`}>
                     {note.audio_url ? <FileAudio className="size-4" /> : <FileText className="size-4" />}
                   </span>
                 <span className="min-w-0 flex-1 space-y-1">
@@ -234,7 +234,7 @@ function DashboardPage() {
               ))}
             </div>
           ) : pods.data?.length ? (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="stagger grid gap-4 sm:grid-cols-2">
               {pods.data.map((pod) => (
                 <PodCard key={pod.id} pod={pod} />
               ))}

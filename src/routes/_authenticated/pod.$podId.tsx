@@ -111,8 +111,13 @@ function PodWorkspacePage() {
       ) : null}
       <Tabs defaultValue="notes" className="min-w-0 gap-6">
         <TabsList className="grid h-auto w-full grid-cols-4 rounded-none border-b border-border bg-transparent p-0">
-          {([{ value: "notes", label: "Notes", icon: FileText }, { value: "flashcards", label: "Flashcards", icon: Layers }, { value: "quizzes", label: "Quizzes", icon: Sparkles }, { value: "chat", label: "Chat", icon: MessageCircle }]).map(({ value, label, icon: Icon }) => (
-            <TabsTrigger key={value} value={value} className="min-w-0 flex-col gap-1.5 rounded-none border-b-2 border-transparent px-1 py-3 text-xs shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:flex-row sm:gap-2 sm:text-sm"><Icon className="size-4 shrink-0" />{label}</TabsTrigger>
+          {([
+            { value: "notes", label: "Notes", icon: FileText, active: "data-[state=active]:border-brand-sky data-[state=active]:text-brand-sky" },
+            { value: "flashcards", label: "Flashcards", icon: Layers, active: "data-[state=active]:border-brand-teal data-[state=active]:text-brand-teal" },
+            { value: "quizzes", label: "Quizzes", icon: Sparkles, active: "data-[state=active]:border-brand-purple data-[state=active]:text-brand-purple" },
+            { value: "chat", label: "Chat", icon: MessageCircle, active: "data-[state=active]:border-brand-pink data-[state=active]:text-brand-pink" },
+          ]).map(({ value, label, icon: Icon, active }) => (
+            <TabsTrigger key={value} value={value} className={`min-w-0 flex-col gap-1.5 rounded-none border-b-2 border-transparent px-1 py-3 text-xs shadow-none transition-colors data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:flex-row sm:gap-2 sm:text-sm ${active}`}><Icon className="size-4 shrink-0" />{label}</TabsTrigger>
           ))}
         </TabsList>
         <TabsContent value="notes" className="min-w-0"><NotesTab podId={podId} userId={user?.id} /></TabsContent>

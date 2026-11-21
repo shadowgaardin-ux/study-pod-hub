@@ -34,7 +34,7 @@ function PodsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="display text-3xl font-semibold tracking-tight">My pods</h1>
+          <h1 className="display text-3xl font-semibold tracking-tight"><span className="text-gradient">My pods</span></h1>
           <p className="text-muted-foreground">Shared workspaces for each of your courses.</p>
         </div>
         <div className="flex gap-2">
@@ -54,7 +54,7 @@ function PodsPage() {
           ))}
         </div>
       ) : pods.data?.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {pods.data.map((pod) => (
             <PodCard key={pod.id} pod={pod} />
           ))}

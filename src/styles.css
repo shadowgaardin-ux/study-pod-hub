@@ -237,6 +237,8 @@
   --brand-pink: oklch(0.68 0.17 350);
   --brand-teal: oklch(0.68 0.12 195);
   --brand-amber: oklch(0.8 0.14 75);
+  --brand-coral: oklch(0.7 0.17 45);
+  --brand-sky: oklch(0.66 0.13 230);
   --gradient-brand: linear-gradient(120deg, var(--brand-navy), var(--brand-purple) 55%, var(--brand-pink));
   --aurora-1: oklch(0.85 0.09 300 / 55%);
   --aurora-2: oklch(0.86 0.08 195 / 45%);
@@ -246,6 +248,8 @@
   --brand-navy: oklch(0.62 0.12 270);
   --brand-purple: oklch(0.7 0.18 300);
   --brand-pink: oklch(0.75 0.15 350);
+  --brand-coral: oklch(0.76 0.14 45);
+  --brand-sky: oklch(0.78 0.11 230);
   --aurora-1: oklch(0.45 0.16 300 / 40%);
   --aurora-2: oklch(0.45 0.1 220 / 35%);
   --aurora-3: oklch(0.45 0.12 340 / 25%);
@@ -256,6 +260,8 @@
   --color-brand-pink: var(--brand-pink);
   --color-brand-teal: var(--brand-teal);
   --color-brand-amber: var(--brand-amber);
+  --color-brand-coral: var(--brand-coral);
+  --color-brand-sky: var(--brand-sky);
   --color-brand-foreground: oklch(0.99 0.003 270);
 }
 
@@ -311,6 +317,41 @@
   &:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-lift);
+  }
+}
+
+@utility stagger {
+  & > * {
+    animation: rise-in 320ms ease-out both;
+  }
+  & > *:nth-child(2) { animation-delay: 50ms; }
+  & > *:nth-child(3) { animation-delay: 100ms; }
+  & > *:nth-child(4) { animation-delay: 150ms; }
+  & > *:nth-child(5) { animation-delay: 200ms; }
+  & > *:nth-child(6) { animation-delay: 250ms; }
+  & > *:nth-child(n+7) { animation-delay: 300ms; }
+}
+
+@utility meter-fill {
+  background-image: linear-gradient(90deg, var(--brand-sky), var(--brand-purple) 55%, var(--brand-pink));
+  background-size: 200% 100%;
+  animation: gradient-pan 4s ease-in-out infinite alternate;
+}
+
+@utility shine {
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, oklch(1 0 0 / 30%) 50%, transparent 60%);
+    transform: translateX(-120%);
+    transition: transform 600ms ease;
+    pointer-events: none;
+  }
+  &:hover::after {
+    transform: translateX(120%);
   }
 }
 
