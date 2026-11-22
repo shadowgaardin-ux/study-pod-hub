@@ -325,12 +325,12 @@ export function AudioHub({
   }
 
   return (
-    <Card className={`relative overflow-hidden border-border bg-card shadow-sm transition-shadow duration-300 before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-brand-gradient ${recording ? "recording-glow" : ""}`}>
+    <Card className={`relative overflow-hidden border-brand-sky/25 bg-card shadow-card transition-shadow duration-300 ${recording ? "recording-glow" : ""}`}>
       <CardContent className="flex flex-col gap-5 p-5 sm:p-6">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
+        <div className="flex flex-col gap-5">
           <div className="min-w-0 grow space-y-4">
             <div className="flex items-center gap-2">
-              <span className={`relative grid size-9 place-items-center rounded-full bg-brand-gradient text-brand-foreground ${recording ? "mic-pulse" : ""}`}><Mic className="size-4" /></span>
+              <span className={`relative grid size-10 place-items-center rounded-lg border border-brand-sky/25 bg-brand-sky/10 text-brand-sky ${recording ? "mic-pulse" : ""}`}><Mic className="size-5" /></span>
               <h2 className="text-lg font-semibold tracking-normal">Lecture recording</h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -397,7 +397,7 @@ export function AudioHub({
             ) : null}
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-3">
+          <div className="flex shrink-0 flex-wrap items-center gap-3 border-t border-border pt-4">
             {recording && (
               <span className="flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive">
                 <span className="flex h-4 items-end gap-0.5" aria-hidden>
@@ -418,7 +418,7 @@ export function AudioHub({
               className="h-10 gap-2 px-5"
             >
               {recording ? <Square className="size-4" /> : <Mic className="size-4" />}
-              {recording ? "Stop" : "Record"}
+              {recording ? "Stop & save" : "Start recording"}
             </Button>
             <Button variant="outline" className="h-10 gap-2 px-5" disabled={busy} asChild>
               <label className="cursor-pointer">

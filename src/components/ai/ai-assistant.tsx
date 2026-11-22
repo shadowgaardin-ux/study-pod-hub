@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { studyAction } from "@/lib/ai.functions";
 import { HelpCircle, KeyRound, List, Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +46,10 @@ export function AiAssistant({ inline = false }: { inline?: boolean }) {
   const [results, setResults] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const runAi = useServerFn(studyAction);
+  const hash = useRouterState({ select: (state) => state.location.hash });
+  useEffect(() => {
+    if (inline && hash === "assistant") setOpen(true);
+  }, [hash, inline]);
 
   const notes = useQuery({
     queryKey: ["ai-source-notes"],
@@ -81,11 +86,13 @@ export function AiAssistant({ inline = false }: { inline?: boolean }) {
   return (
     <>
       {inline ? (
-        <section className="space-y-4 border-t border-border pt-6">
-          <h2 className="flex items-center gap-2 text-lg font-semibold tracking-normal">
-            <Sparkles className="size-4 text-ai" /> AI Assistant
+        <section className="space-y-5 border-y border-brand-purple/20 bg-accent/30 px-5 py-6">
+          <span className="grid size-11 place-items-center rounded-lg border border-brand-purple/25 bg-brand-purple/10 text-ai"><Sparkles className="size-5" /></span>
+          <h2 className="text-lg font-semibold">
+            AI Assistant
           </h2>
-          <Button variant="outline" onClick={() => setOpen(true)} className="w-full justify-between" aria-label="Open AI assistant">
+          <p className="text-sm leading-relaxed text-muted-foreground">Your notes. A fresh perspective.</p>
+          <Button onClick={() => setOpen(true)} className="w-full justify-between" aria-label="Open AI assistant">
             Study with AI <Sparkles className="size-4" />
           </Button>
         </section>

@@ -1,3 +1,8 @@
+# Midnight Focus redesign adaptation
+- [ ] Apply reference typography, shared surfaces and lavender/cyan/amber accents consistently without changing backend features.
+- [ ] Adapt dashboard and navigation to real recording, notes, pods and AI actions; remove demo-only indicators and analytics noise.
+- [ ] Verify signed-in navigation and study screens on desktop/mobile, both themes, reduced motion and automatic build; commit changes.
+
 # Logo-matched polish and transcription repair
 - [ ] Correct schema-specific ownership guards without changing columns or access rules; verify note updates and ownership denials.
 - [x] Polish shared theme and transitions while preserving layouts; check desktop, mobile and dark mode.

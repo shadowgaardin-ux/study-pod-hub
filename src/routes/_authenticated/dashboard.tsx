@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouterState } from "@tanstack/react-router";
 import {
   ArrowRight,
   ChevronDown,
@@ -10,11 +10,12 @@ import {
   Plus,
   Users,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AiAssistant } from "@/components/ai/ai-assistant";
 import { AudioHub } from "@/components/dashboard/audio-hub";
 import { PersonalLibrary } from "@/components/dashboard/personal-library";
+import { NoteViewer } from "@/components/notes/note-viewer";
 import { DiscoverTab } from "@/components/pods/discover-tab";
 import { PodCard } from "@/components/pods/pod-card";
 import { CreatePodDialog, JoinPodDialog } from "@/components/pods/pod-dialogs";
@@ -35,10 +36,10 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Dashboard — Study Notes" },
-      { name: "description", content: "Your study pods, usage and shared course material." },
-      { property: "og:title", content: "Dashboard — Study Notes" },
-      { property: "og:description", content: "Your study pods, usage and shared course material." },
+      { title: "Dashboard — Study Pods Hub" },
+      { name: "description", content: "Record lectures, revisit your notes and study together in your pods." },
+      { property: "og:title", content: "Dashboard — Study Pods Hub" },
+      { property: "og:description", content: "Record lectures, revisit your notes and study together in your pods." },
     ],
   }),
   component: DashboardPage,
@@ -92,6 +93,16 @@ function DashboardPage() {
   const [joinOpen, setJoinOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
   const recordRef = useRef<HTMLDivElement>(null);
+  const hash = useRouterState({ select: (state) => state.location.hash });
+  const [viewingId, setViewingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (hash === "library") setActiveTab("library");
+    const target = hash === "library" ? "dashboard-tabs" : hash === "recording" ? "recording" : hash === "assistant" ? "assistant" : null;
+    if (!target) return;
+    const frame = requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }));
+    return () => cancelAnimationFrame(frame);
+  }, [hash]);
 
   const firstName = profile?.full_name?.split(" ")[0] || "there";
   const isNewUser = Boolean(
@@ -113,19 +124,19 @@ function DashboardPage() {
   }
 
   return (
-    <div className="space-y-10 pb-6 sm:space-y-12">
+    <div className="min-w-0 space-y-7 pb-6 sm:space-y-8">
       {/* ── Welcome hero ─────────────────────────────────────────── */}
-      <section className="aurora space-y-7 rounded-2xl border border-border/60 px-5 py-6 sm:px-8 sm:py-8">
-          <div className="max-w-2xl space-y-3">
-            <p className="text-xs font-medium uppercase tracking-normal text-muted-foreground">Your study workspace</p>
-            <h1 className="text-3xl leading-tight font-semibold tracking-normal sm:text-4xl">
-              <span className="text-gradient">{greeting}</span>
+      <section className="flex flex-wrap items-center justify-between gap-6 border-b border-border pb-7">
+          <div className="min-w-0 max-w-2xl space-y-2">
+            <p className="text-xs font-semibold uppercase text-brand-sky">Study Pods Hub</p>
+            <h1 className="text-2xl leading-tight font-bold sm:text-3xl">
+              {greeting} <span className="inline-block transition-transform hover:rotate-12" aria-hidden>👋</span>
             </h1>
             <p className="text-base text-muted-foreground">
-              Ready to make progress today?
+              A little focus. A little collaboration. A lot of progress.
             </p>
           </div>
-        <div className="stagger grid gap-3 sm:grid-cols-3 sm:max-w-2xl">
+        <div className="stagger grid w-full gap-2 min-[480px]:grid-cols-3 2xl:w-auto">
           <QuickAction
             icon={Mic}
             title="Record Lecture"
@@ -144,16 +155,14 @@ function DashboardPage() {
         </div>
       </section>
 
-      {/* ── Recording hub ────────────────────────────────────────── */}
-      <div ref={recordRef} className="scroll-mt-24">
+      <div className="grid items-start gap-7 xl:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="min-w-0 space-y-8">
+      <div ref={recordRef} id="recording" className="scroll-mt-28">
         <AudioHub pods={pods.data} userId={user?.id} />
       </div>
-
-      <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,1fr)_260px] xl:gap-10">
-      <div className="min-w-0 space-y-10">
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-xl font-semibold tracking-normal">Recent activity</h2>
+          <h2 className="flex items-center gap-2 text-lg font-semibold"><Library className="size-4 text-brand-purple" /> Recent notes & recordings</h2>
           {recentNotes.length ? (
             <Button variant="ghost" size="sm" onClick={goToLibrary}>
               View all <ArrowRight className="size-4" />
@@ -168,14 +177,14 @@ function DashboardPage() {
             ))}
           </div>
         ) : recentNotes.length ? (
-          <div className="stagger divide-y divide-border border-y border-border">
+          <div className="stagger space-y-3">
             {recentNotes.map((note) => (
               <Button
                 key={note.id}
                 type="button"
-                onClick={goToLibrary}
+                onClick={() => setViewingId(note.id)}
                 variant="ghost"
-                className="flex h-auto min-h-24 w-full items-center justify-start gap-4 rounded-none px-2 py-4 text-left whitespace-normal"
+                className="lift flex h-auto min-h-24 w-full items-center justify-start gap-4 rounded-lg border border-border bg-card p-4 text-left whitespace-normal hover:bg-secondary"
               >
                   <span className={`grid size-10 shrink-0 place-items-center rounded-md ${note.audio_url ? "bg-brand-pink/10 text-brand-pink" : "bg-brand-sky/10 text-brand-sky"}`}>
                     {note.audio_url ? <FileAudio className="size-4" /> : <FileText className="size-4" />}
@@ -254,8 +263,9 @@ function DashboardPage() {
       </Tabs>
       </div>
 
-      <aside className="space-y-8 border-t border-border pt-8 xl:border-t-0 xl:border-l xl:pl-8 xl:pt-0">
-        <section className="space-y-5">
+      <aside className="min-w-0 space-y-6">
+        <div id="assistant" className="scroll-mt-28"><AiAssistant inline /></div>
+        <section className="space-y-5 border-t border-border pt-6">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-lg font-semibold tracking-normal">Plan usage</h2>
             <Badge variant="secondary">{plan.tier}</Badge>
@@ -275,12 +285,12 @@ function DashboardPage() {
           </Collapsible>
           {plan.tier === "Free" ? <Button asChild variant="link" size="sm" className="h-auto px-0"><Link to="/billing">Upgrade plan <ArrowRight className="size-4" /></Link></Button> : null}
         </section>
-        <AiAssistant inline />
       </aside>
       </div>
 
       <CreatePodDialog open={createOpen} onOpenChange={setCreateOpen} userId={user?.id} />
       <JoinPodDialog open={joinOpen} onOpenChange={setJoinOpen} />
+      <NoteViewer note={personalNotes.data?.find((note) => note.id === viewingId) ?? null} userId={user?.id} onOpenChange={(open) => !open && setViewingId(null)} />
     </div>
   );
 }

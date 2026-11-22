@@ -34,7 +34,7 @@ function PodsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="display text-3xl font-semibold tracking-tight"><span className="text-gradient">My pods</span></h1>
+          <h1 className="display text-3xl font-bold">Study Pods</h1>
           <p className="text-muted-foreground">Shared workspaces for each of your courses.</p>
         </div>
         <div className="flex gap-2">
