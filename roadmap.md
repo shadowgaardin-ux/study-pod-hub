@@ -1,3 +1,7 @@
+# App-wide premium AI style
+- [x] Shared gradients/glow/shimmer, dark default, restyled buttons, cards, tags, tabs and empty states.
+- [x] Consistent headers and polish on Library, Study Pods, AI Assistant, Recording, Billing, Settings and pod workspace; verify desktop/mobile and both themes.
+
 # Compact AI dashboard
 - [x] Create a one-screen AI study dashboard with a prominent recording action and animated audio visual.
 - [x] Preserve recording, library, pods, assistant and billing; verify mobile/desktop, themes and recording flow.

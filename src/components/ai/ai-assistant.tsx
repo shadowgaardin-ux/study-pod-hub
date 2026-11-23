@@ -106,7 +106,7 @@ export function AiAssistant({ inline = false, compact = false }: { inline?: bool
       </Button>}
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-md">
+        <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto bg-card bg-gradient-surface sm:max-w-md">
           <SheetHeader>
             <SheetTitle className="display flex items-center gap-3 text-xl">
               <span className="icon-chip size-10 shadow-glow logo-glow"><Sparkles className="size-5" /></span>
@@ -117,7 +117,7 @@ export function AiAssistant({ inline = false, compact = false }: { inline?: bool
             </SheetDescription>
           </SheetHeader>
 
-          <div className="space-y-4 px-4 pb-8">
+          <div className="space-y-4 px-6 pb-8">
             {notes.isLoading ? (
               <Skeleton className="h-10 rounded-md" />
             ) : (

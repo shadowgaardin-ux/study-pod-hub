@@ -21,3 +21,4 @@
 - Apply verified payments through the service-role-only atomic database function; payment insertion and tier activation must succeed or roll back together.
 - Quote search filter literals and neutralize spreadsheet formula cells in exports; user content must not become query syntax or executable formulas.
 - Plan activation uses the service-role RPC when SUPABASE_SERVICE_ROLE_KEY exists, else a proof-gated RPC (hashed PAYMENT_ACTIVATION_SECRET); non-Lovable hosts like Vercel lack the admin key.
+- Open signed-in screens with the shared `PageHeader` and style surfaces through shared primitives/utilities (Card, Button, Badge, `icon-chip`, `glow-ring`); page-level one-off styling drifts from the single design language.
