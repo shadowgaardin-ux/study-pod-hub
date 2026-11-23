@@ -400,12 +400,13 @@
 .audio-line-4 { height: 48%; animation-delay: -1.6s; }
 .is-recording .audio-line { animation-duration: .65s; }
 .is-recording .audio-core { color: var(--destructive); border-color: var(--destructive); }
-.ai-record-button { box-shadow: 0 8px 26px color-mix(in oklab, var(--primary) 20%, transparent); background-size: 180% 100%; }
-.ai-record-button:hover { background-position: 100% 50%; }
+.ai-record-button { box-shadow: 0 8px 26px color-mix(in oklab, var(--primary) 20%, transparent); background-size: 180% 100%; transition: background-position 600ms ease, transform 200ms ease, box-shadow 200ms ease; }
+.ai-record-button:hover { background-position: 100% 50%; transform: translateY(-2px); box-shadow: 0 12px 30px color-mix(in oklab, var(--primary) 28%, transparent); }
+.ai-record-button:active { transform: translateY(0); }
 @keyframes audio-wave { from { transform: scaleY(.65); opacity: .55; } to { transform: scaleY(1); opacity: 1; } }
 @keyframes audio-orbit { from { transform: rotate(-8deg) scale(.96); } to { transform: rotate(8deg) scale(1); } }
 @media (max-width: 480px) {
-  .ai-audio-visual { height: 156px; gap: 12px; }
+  .ai-audio-visual { height: 144px; gap: 12px; }
   .audio-wave { width: 86px; gap: 3px; }
   .audio-core { width: 68px; height: 68px; }
 }

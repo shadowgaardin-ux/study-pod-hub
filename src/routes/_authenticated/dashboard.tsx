@@ -1,4 +1,4 @@
-import { Link, createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ArrowRight, Compass, FileAudio, FileText, Library, Plus, Sparkles, Users } from "lucide-react";
 import { useState } from "react";
 import { AiAssistant } from "@/components/ai/ai-assistant";
@@ -49,7 +49,7 @@ function DashboardPage() {
       {/* Keep capture mounted when switching to the library so recordings are not interrupted. */}
       <div hidden={libraryOpen}>
         <section className="mx-auto flex max-w-2xl flex-col items-center text-center">
-          <p className="mb-5 text-xs text-muted-foreground">Welcome back, {firstName}</p>
+          <p className="mb-3 text-xs text-muted-foreground sm:mb-5">Welcome back, {firstName}</p>
           <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase text-brand-sky"><Sparkles className="size-3.5" />Your AI study space</p>
           <h1 className="text-3xl leading-tight font-bold sm:text-4xl">Study Pods Hub</h1>
           <p className="mt-3 text-lg font-medium text-foreground">Less note-taking. More understanding.</p>

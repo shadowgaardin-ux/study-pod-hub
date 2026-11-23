@@ -1,6 +1,6 @@
 # Compact AI dashboard
-- [ ] Create a one-screen AI study dashboard with a prominent recording action and animated audio visual.
-- [ ] Preserve recording, library, pods, assistant and billing; verify mobile/desktop, themes and recording flow.
+- [x] Create a one-screen AI study dashboard with a prominent recording action and animated audio visual.
+- [x] Preserve recording, library, pods, assistant and billing; verify mobile/desktop, themes and recording flow.
 
 # Midnight Focus redesign adaptation
 - [x] Apply reference typography, shared surfaces and lavender/cyan/amber accents consistently without changing backend features.
