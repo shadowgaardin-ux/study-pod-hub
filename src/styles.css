@@ -371,3 +371,41 @@
   h1, h2, h3 { overflow-wrap: anywhere; }
   ::selection { background: var(--accent); color: var(--accent-foreground); }
 }
+
+/* Audio-inspired artwork for the focused study screen. */
+.ai-audio-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  height: 180px;
+  width: 100%;
+  max-width: 600px;
+  margin-inline: auto;
+}
+.audio-orbits { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--brand-purple); }
+.audio-orbits ellipse { stroke: currentColor; stroke-width: 1; opacity: .18; transform-origin: center; animation: audio-orbit 9s ease-in-out infinite alternate; }
+.audio-orbits ellipse:nth-child(2) { color: var(--brand-sky); animation-delay: -3s; }
+.audio-orbits ellipse:nth-child(3) { color: var(--brand-amber); animation-delay: -6s; }
+.audio-core { position: relative; display: grid; place-items: center; width: 76px; height: 76px; flex-shrink: 0; border-radius: 50%; border: 1px solid color-mix(in oklab, var(--primary) 45%, transparent); background: var(--accent); color: var(--primary); box-shadow: 0 0 32px color-mix(in oklab, var(--primary) 14%, transparent); }
+.audio-spark { position: absolute; right: -2px; top: 2px; color: var(--brand-amber); }
+.audio-wave { display: flex; align-items: center; justify-content: center; gap: 4px; height: 76px; width: 116px; }
+.audio-line { flex: 1; min-width: 2px; max-width: 3px; border-radius: 999px; background: var(--brand-sky); height: 35%; transform-origin: center; animation: audio-wave 3s ease-in-out infinite alternate; }
+.audio-wave-right .audio-line { background: var(--brand-purple); }
+.audio-line-0 { height: 14%; animation-delay: -.4s; }
+.audio-line-1 { height: 34%; animation-delay: -1.2s; }
+.audio-line-2 { height: 62%; animation-delay: -2s; }
+.audio-line-3 { height: 88%; animation-delay: -.8s; }
+.audio-line-4 { height: 48%; animation-delay: -1.6s; }
+.is-recording .audio-line { animation-duration: .65s; }
+.is-recording .audio-core { color: var(--destructive); border-color: var(--destructive); }
+.ai-record-button { box-shadow: 0 8px 26px color-mix(in oklab, var(--primary) 20%, transparent); background-size: 180% 100%; }
+.ai-record-button:hover { background-position: 100% 50%; }
+@keyframes audio-wave { from { transform: scaleY(.65); opacity: .55; } to { transform: scaleY(1); opacity: 1; } }
+@keyframes audio-orbit { from { transform: rotate(-8deg) scale(.96); } to { transform: rotate(8deg) scale(1); } }
+@media (max-width: 480px) {
+  .ai-audio-visual { height: 156px; gap: 12px; }
+  .audio-wave { width: 86px; gap: 3px; }
+  .audio-core { width: 68px; height: 68px; }
+}

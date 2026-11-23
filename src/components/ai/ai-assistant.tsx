@@ -39,7 +39,7 @@ const ACTIONS: { key: Action; label: string; icon: typeof List }[] = [
   { key: "quiz", label: "Create quiz questions", icon: HelpCircle },
 ];
 
-export function AiAssistant({ inline = false }: { inline?: boolean }) {
+export function AiAssistant({ inline = false, compact = false }: { inline?: boolean; compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const [noteId, setNoteId] = useState("");
   const [action, setAction] = useState<Action | null>(null);
@@ -85,7 +85,7 @@ export function AiAssistant({ inline = false }: { inline?: boolean }) {
 
   return (
     <>
-      {inline ? (
+      {compact ? <Button variant="ghost" onClick={() => setOpen(true)} className="gap-2 text-sm text-muted-foreground" aria-label="Open AI assistant"><Sparkles className="size-4 text-ai" />AI Assistant</Button> : inline ? (
         <section className="space-y-5 border-y border-brand-purple/20 bg-accent/30 px-5 py-6">
           <span className="grid size-11 place-items-center rounded-lg border border-brand-purple/25 bg-brand-purple/10 text-ai"><Sparkles className="size-5" /></span>
           <h2 className="text-lg font-semibold">

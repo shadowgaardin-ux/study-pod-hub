@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { AiAudioVisual } from "@/components/dashboard/ai-audio-visual";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -64,9 +65,11 @@ function getSpeechRecognition(): (new () => SpeechRecognitionInstance) | null {
 export function AudioHub({
   pods,
   userId,
+  focus = false,
 }: {
   pods: PodWithCount[] | undefined;
   userId: string | undefined;
+  focus?: boolean;
 }) {
   const queryClient = useQueryClient();
   const { profile } = useAuth();
@@ -325,10 +328,12 @@ export function AudioHub({
   }
 
   return (
-    <Card className={`relative overflow-hidden border-brand-sky/25 bg-card shadow-card transition-shadow duration-300 ${recording ? "recording-glow" : ""}`}>
-      <CardContent className="flex flex-col gap-5 p-5 sm:p-6">
+    <Card className={`relative overflow-hidden transition-shadow duration-300 ${focus ? "rounded-none border-0 bg-transparent shadow-none" : `border-brand-sky/25 bg-card shadow-card ${recording ? "recording-glow" : ""}`}`}>
+      <CardContent className={focus ? "flex flex-col gap-3 p-0" : "flex flex-col gap-5 p-5 sm:p-6"}>
+        {focus && <AiAudioVisual recording={recording} />}
         <div className="flex flex-col gap-5">
-          <div className="min-w-0 grow space-y-4">
+          <details className={`min-w-0 grow space-y-4 ${focus ? "order-2 text-left" : ""}`} open={focus ? undefined : true}>
+            <summary className={focus ? "mx-auto w-fit cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground" : "hidden"}>Recording options · {plan.tier} plan</summary>
             <div className="flex items-center gap-2">
               <span className={`relative grid size-10 place-items-center rounded-lg border border-brand-sky/25 bg-brand-sky/10 text-brand-sky ${recording ? "mic-pulse" : ""}`}><Mic className="size-5" /></span>
               <h2 className="text-lg font-semibold tracking-normal">Lecture recording</h2>
@@ -395,9 +400,10 @@ export function AudioHub({
                 </Button>
               </div>
             ) : null}
-          </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">{UPLOAD_HINT}</p>
+          </details>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-3 border-t border-border pt-4">
+          <div className={focus ? "flex flex-col items-center gap-3" : "flex shrink-0 flex-wrap items-center gap-3 border-t border-border pt-4"}>
             {recording && (
               <span className="flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive">
                 <span className="flex h-4 items-end gap-0.5" aria-hidden>
@@ -415,14 +421,14 @@ export function AudioHub({
               onClick={recording ? stopRecording : () => void startRecording()}
               disabled={busy || (!recording && atRecordingLimit)}
               variant={recording ? "destructive" : "default"}
-              className="h-10 gap-2 px-5"
+              className={focus ? `ai-record-button h-16 w-full max-w-72 gap-3 rounded-full px-8 text-base font-semibold ${recording ? "" : "bg-brand-gradient"}` : "h-10 gap-2 px-5"}
             >
               {recording ? <Square className="size-4" /> : <Mic className="size-4" />}
-              {recording ? "Stop & save" : "Start recording"}
+              {busy ? "Saving recording…" : recording ? "Stop & save" : focus ? "Record with AI" : "Start recording"}
             </Button>
-            <Button variant="outline" className="h-10 gap-2 px-5" disabled={busy} asChild>
+            <Button variant={focus ? "ghost" : "outline"} className={focus ? "h-8 gap-2 px-3 text-xs text-muted-foreground" : "h-10 gap-2 px-5"} disabled={busy} asChild>
               <label className="cursor-pointer">
-                <Upload className="size-4" /> Upload
+                <Upload className="size-4" /> {focus ? "Upload audio instead" : "Upload"}
                 <input
                   type="file"
                   accept={UPLOAD_ACCEPT}
@@ -444,7 +450,7 @@ export function AudioHub({
           </div>
         </div>
 
-        <p className="text-xs leading-relaxed text-muted-foreground">{UPLOAD_HINT}</p>
+        {focus && recovered && !recording && <div className="flex flex-wrap items-center justify-center gap-2 text-sm"><span>Unfinished recording found</span><Button size="sm" variant="secondary" onClick={() => void recoverSession()} disabled={busy}>Save it</Button></div>}
 
         {(recording || liveTranscript) && (
           <div className="space-y-1.5">
