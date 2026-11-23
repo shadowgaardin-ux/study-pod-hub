@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/layout/page-header";
 import { useAuth } from "@/hooks/use-auth";
 import { usePersonalNotes } from "@/lib/library";
 import { usePods } from "@/lib/queries";
@@ -72,9 +73,9 @@ function DashboardPage() {
         </section>}
       </div>
       {libraryOpen && <section className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-bold">My Library</h1><Button variant="ghost" onClick={() => void navigate({ to: "/dashboard", hash: "" })}>Back to dashboard <ArrowRight className="size-4" /></Button></div>
+        <PageHeader icon={Library} eyebrow="Your study space" title="My Library" description="Private recordings and notes, your pods and public pods to discover." actions={<Button variant="outline" onClick={() => void navigate({ to: "/dashboard", hash: "" })}>Back to dashboard <ArrowRight className="size-4" /></Button>} />
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6" id="dashboard-tabs">
-          <TabsList className="grid h-auto w-full grid-cols-3">
+          <TabsList className="grid h-auto w-full grid-cols-3 sm:max-w-md">
             <TabsTrigger value="library">My Library</TabsTrigger>
             <TabsTrigger value="active">Study Pods</TabsTrigger>
             <TabsTrigger value="discover">Discover</TabsTrigger>

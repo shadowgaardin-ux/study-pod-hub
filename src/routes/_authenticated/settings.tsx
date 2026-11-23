@@ -1,3 +1,5 @@
+import { Settings as SettingsIcon } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -60,10 +62,7 @@ function SettingsPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="display text-3xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Manage your profile and appearance.</p>
-      </div>
+      <PageHeader icon={SettingsIcon} eyebrow="Account" title="Settings" description="Manage your profile and appearance." />
 
       <Card>
         <CardHeader>

@@ -410,3 +410,95 @@
   .audio-wave { width: 86px; gap: 3px; }
   .audio-core { width: 68px; height: 68px; }
 }
+
+/* ---------------------------------------------------------------------------
+ * Midnight Focus — app-wide premium layer (gradients, glow, glass, shimmer).
+ * ------------------------------------------------------------------------- */
+:root {
+  --gradient-primary: linear-gradient(135deg, var(--primary), color-mix(in oklab, var(--primary) 55%, var(--brand-sky)));
+  --gradient-surface: linear-gradient(180deg, color-mix(in oklab, var(--card) 96%, var(--primary)), var(--card));
+  --glow-primary: 0 8px 28px -10px color-mix(in oklab, var(--primary) 55%, transparent);
+  --glow-primary-strong: 0 14px 40px -12px color-mix(in oklab, var(--primary) 70%, transparent);
+  --ambient-1: color-mix(in oklab, var(--primary) 7%, transparent);
+  --ambient-2: color-mix(in oklab, var(--brand-sky) 6%, transparent);
+}
+.dark {
+  --background: oklch(0.18 0.04 266);
+  --card: oklch(0.225 0.04 268);
+  --secondary: oklch(0.27 0.038 268);
+  --sidebar: oklch(0.165 0.038 266);
+  --shadow-card: inset 0 1px 0 oklch(1 0 0 / 4%), 0 4px 18px oklch(0.08 0.03 265 / 35%);
+  --ambient-1: color-mix(in oklab, var(--primary) 13%, transparent);
+  --ambient-2: color-mix(in oklab, var(--brand-sky) 9%, transparent);
+}
+
+@layer base {
+  body {
+    background-image:
+      radial-gradient(ellipse 55% 38% at 12% -6%, var(--ambient-1), transparent 70%),
+      radial-gradient(ellipse 45% 32% at 100% 0%, var(--ambient-2), transparent 70%);
+    background-attachment: fixed;
+  }
+}
+
+@utility bg-gradient-primary {
+  background-image: var(--gradient-primary);
+}
+@utility bg-gradient-surface {
+  background-image: var(--gradient-surface);
+}
+@utility shadow-glow {
+  box-shadow: var(--glow-primary);
+}
+@utility shadow-glow-strong {
+  box-shadow: var(--glow-primary-strong);
+}
+@utility glass {
+  background-color: color-mix(in oklab, var(--background) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+/* Gradient hairline border for highlighted surfaces (recommended plan, AI panels). */
+@utility glow-ring {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--primary), var(--brand-sky) 55%, var(--brand-amber));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+@utility icon-chip {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: calc(var(--radius) + 4px);
+  background-image: linear-gradient(135deg, color-mix(in oklab, var(--primary) 22%, transparent), color-mix(in oklab, var(--brand-sky) 14%, transparent));
+  border: 1px solid color-mix(in oklab, var(--primary) 25%, transparent);
+  color: var(--primary);
+}
+@utility shimmer {
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--foreground) 7%, transparent), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}
+@keyframes shimmer {
+  to { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:hover > [data-slot="card"], [data-slot="card"].lift:hover { box-shadow: var(--shadow-card), var(--glow-primary); }
+}

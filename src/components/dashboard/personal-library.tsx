@@ -75,7 +75,7 @@ export function PersonalLibrary({
     await queryClient.invalidateQueries();
   }
 
-  if (notes.isLoading) return <Skeleton className="h-40 rounded-xl" />;
+  if (notes.isLoading) return <div className="grid gap-3 min-[640px]:grid-cols-2"><Skeleton className="h-56 rounded-xl" /><Skeleton className="h-56 rounded-xl" /></div>;
 
   if (!notes.data?.length) {
     return (
@@ -91,23 +91,23 @@ export function PersonalLibrary({
     <>
       <div className="stagger grid gap-3 min-[640px]:grid-cols-2">
         {notes.data.map((note) => (
-          <Card key={note.id}>
+          <Card key={note.id} className="lift group">
             <CardContent className="flex h-full flex-col gap-3 pt-6">
               <div className="flex items-start gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <FileAudio className="size-4" />
+                <span className="icon-chip size-10 transition-transform duration-300 group-hover:scale-105">
+                  {note.audio_url ? <FileAudio className="size-4" /> : <FileText className="size-4" />}
                 </span>
                 <div className="min-w-0">
                   <p className="truncate font-medium">{note.title}</p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(note.created_at).toLocaleDateString()} · Private
+                    {new Date(note.created_at).toLocaleDateString()} · <span className="text-brand-sky">Private</span>
                   </p>
                 </div>
               </div>
               <Button variant="ghost"
                 type="button"
                 onClick={() => setViewing(note)}
-                className="h-auto justify-start whitespace-normal rounded-md bg-muted/40 p-3 text-left text-sm font-normal text-muted-foreground hover:bg-muted"
+                className="h-auto justify-start whitespace-normal rounded-lg border border-border/60 bg-secondary/40 p-3 text-left text-sm font-normal text-muted-foreground hover:border-primary/30 hover:bg-secondary"
               >
                 {note.transcript || note.summary ? (
                   <span className="line-clamp-3">{note.transcript || note.summary}</span>

@@ -5,18 +5,18 @@ type Theme = "light" | "dark";
 const STORAGE_KEY = "study-notes-theme";
 
 const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
-  theme: "light",
+  theme: "dark",
   toggleTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   // Read persisted preference after hydration to avoid an SSR mismatch.
   useEffect(() => {
+    // Dark is the signature look; a saved choice from the toggle always wins.
     const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setTheme(stored ?? (prefersDark ? "dark" : "light"));
+    setTheme(stored === "light" ? "light" : "dark");
   }, []);
 
   useEffect(() => {

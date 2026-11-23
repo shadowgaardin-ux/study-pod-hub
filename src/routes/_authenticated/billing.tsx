@@ -3,7 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { confirmPayment, startCheckout } from "@/lib/payments.functions";
-import { Check, Loader2 } from "lucide-react";
+import { CalendarRange, Check, CreditCard, Crown, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -100,52 +101,72 @@ function BillingPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="display text-3xl font-semibold tracking-tight">Billing</h1>
-        <p className="text-muted-foreground">
-          You are on the <span className="font-medium text-foreground">{current.tier}</span> plan.
-          {profile?.tier_expires_at
-            ? ` Renews ${new Date(profile.tier_expires_at).toLocaleDateString()}.`
-            : ""}
-        </p>
+    <div className="space-y-8">
+      <PageHeader
+        icon={CreditCard}
+        eyebrow="Billing & Plans"
+        title="Choose how you study"
+        description="Upgrade for more recording time, more pods and richer AI study tools. Payments are processed securely by Paystack."
+      />
+
+      <section className="glow-ring rise-in-late flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-card bg-gradient-surface p-5 shadow-card sm:p-6">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="icon-chip size-12"><Crown className="size-5" /></span>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Current plan</p>
+            <p className="display text-2xl font-bold">
+              <span className="text-gradient">{current.tier}</span>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {profile?.tier_expires_at
+                ? `Active until ${new Date(profile.tier_expires_at).toLocaleDateString()}`
+                : current.tier === "Free" ? "Free forever — upgrade any time" : "Active"}
+            </p>
+          </div>
+        </div>
         {confirming ? (
-          <p className="mt-2 flex items-center gap-2 text-sm text-primary">
+          <p className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
             <Loader2 className="size-4 animate-spin" /> Confirming your payment…
           </p>
-        ) : null}
-      </div>
+        ) : (
+          <Badge variant="soft" className="gap-1.5 px-3 py-1"><ShieldCheck className="size-3.5" /> Verified by Paystack</Badge>
+        )}
+      </section>
 
       {signupPlan && !confirming ? (
-        <p className="rounded-md bg-accent px-3 py-2 text-sm text-accent-foreground">
+        <p className="rounded-xl border border-brand-amber/30 bg-brand-amber/10 px-4 py-3 text-sm">
           Almost there — complete payment to activate your{" "}
           <span className="font-semibold">{signupPlan}</span> plan. If you skip it, your account
           stays on Free and you can upgrade here any time.
         </p>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="stagger grid gap-5 md:grid-cols-3">
         {TIER_ORDER.map((tier) => {
           const plan = TIER_PLANS[tier];
           const isCurrent = plan.tier === current.tier;
+          const item = plan.tier === "Max" ? "max_monthly" : "pro_monthly";
           return (
-            <Card key={tier} className={plan.recommended ? "border-primary" : undefined}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+            <Card
+              key={tier}
+              className={`lift flex flex-col ${plan.recommended ? "glow-ring border-transparent shadow-glow md:-translate-y-1" : ""} ${isCurrent ? "ring-1 ring-primary/40" : ""}`}
+            >
+              <CardHeader className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
                   <CardTitle className="display text-xl">{plan.tier}</CardTitle>
-                  {plan.recommended ? <Badge>Recommended</Badge> : null}
+                  {isCurrent ? <Badge variant="sky">Your plan</Badge> : plan.recommended ? <Badge><Sparkles className="mr-1 size-3" />Recommended</Badge> : null}
                 </div>
                 <CardDescription>{plan.tagline}</CardDescription>
-                <p className="pt-2 text-3xl font-semibold">
+                <p className="display pt-1 text-4xl font-bold">
                   {plan.priceLabel}
-                  <span className="text-sm font-normal text-muted-foreground">/month</span>
+                  <span className="ml-1 text-sm font-normal text-muted-foreground">/month</span>
                 </p>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
+              <CardContent className="flex-1">
+                <ul className="space-y-2.5 text-sm">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex gap-2">
-                      <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                    <li key={feature} className="flex gap-2.5">
+                      <span className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-primary/15 text-primary"><Check className="size-3" /></span>
                       {feature}
                     </li>
                   ))}
@@ -154,11 +175,12 @@ function BillingPage() {
               <CardFooter>
                 <Button
                   className="w-full"
-                  variant={isCurrent ? "outline" : plan.recommended ? "default" : "secondary"}
+                  size="lg"
+                  variant={isCurrent ? "outline" : plan.recommended ? "default" : plan.tier === "Free" ? "secondary" : "outline"}
                   disabled={isCurrent || plan.tier === "Free" || pending !== null}
-                  onClick={() => void handleUpgrade(plan.tier === "Max" ? "max_monthly" : "pro_monthly")}
+                  onClick={() => void handleUpgrade(item)}
                 >
-                  {pending === (plan.tier === "Max" ? "max_monthly" : "pro_monthly") ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {pending === item ? <Loader2 className="size-4 animate-spin" /> : null}
                   {isCurrent ? "Current plan" : plan.tier === "Free" ? "Free forever" : current.tier !== "Free" ? `Switch to ${plan.tier}` : `Upgrade to ${plan.tier}`}
                 </Button>
               </CardFooter>
@@ -167,39 +189,44 @@ function BillingPage() {
         })}
       </div>
 
-      <div>
-        <h2 className="display text-xl font-semibold">Semester Passes</h2>
-        <p className="text-sm text-muted-foreground">Pay once for 3 months and save.</p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {[SEMESTER_PASS, MAX_SEMESTER_PASS].map((pass) => (
-          <Card key={pass.name} className="border-primary/40 bg-primary/5">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="display text-xl">{pass.name}</CardTitle>
-                <Badge>{pass.saveLabel}</Badge>
-              </div>
-              <CardDescription>
-                {pass.tier} features for {pass.months} months · {pass.perMonthLabel}
-              </CardDescription>
-              <p className="pt-2 text-3xl font-semibold">
-                {pass.priceLabel}
-                <span className="text-sm font-normal text-muted-foreground"> once</span>
-              </p>
-            </CardHeader>
-            <CardFooter>
-              <Button
-                className="w-full"
-                disabled={pending !== null}
-                onClick={() => void handleUpgrade(pass.tier === "Max" ? "max_semester" : "pro_semester")}
-              >
-                {pending === (pass.tier === "Max" ? "max_semester" : "pro_semester") ? <Loader2 className="size-4 animate-spin" /> : null}
-                Get {pass.name}
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      <section className="space-y-4">
+        <div className="flex items-center gap-3">
+          <span className="icon-chip size-9 text-brand-amber"><CalendarRange className="size-4" /></span>
+          <div>
+            <h2 className="display text-xl font-semibold">Semester Passes</h2>
+            <p className="text-sm text-muted-foreground">Pay once for 3 months and save.</p>
+          </div>
+        </div>
+        <div className="stagger grid gap-5 md:grid-cols-2">
+          {[SEMESTER_PASS, MAX_SEMESTER_PASS].map((pass) => {
+            const item = pass.tier === "Max" ? "max_semester" : "pro_semester";
+            return (
+              <Card key={pass.name} className="lift relative overflow-hidden">
+                <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 size-40 rounded-full bg-brand-amber/15 blur-3xl" />
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="display text-xl">{pass.name}</CardTitle>
+                    <Badge variant="amber">{pass.saveLabel}</Badge>
+                  </div>
+                  <CardDescription>
+                    {pass.tier} features for {pass.months} months · {pass.perMonthLabel}
+                  </CardDescription>
+                  <p className="display pt-1 text-3xl font-bold">
+                    {pass.priceLabel}
+                    <span className="ml-1 text-sm font-normal text-muted-foreground">once</span>
+                  </p>
+                </CardHeader>
+                <CardFooter>
+                  <Button className="w-full" size="lg" disabled={pending !== null} onClick={() => void handleUpgrade(item)}>
+                    {pending === item ? <Loader2 className="size-4 animate-spin" /> : null}
+                    Get {pass.name}
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }

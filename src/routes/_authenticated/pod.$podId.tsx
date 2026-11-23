@@ -74,13 +74,14 @@ function PodWorkspacePage() {
       <Button asChild variant="ghost" size="sm" className="-ml-2 text-muted-foreground">
         <Link to="/dashboard"><ArrowLeft className="size-4" /> Dashboard</Link>
       </Button>
-      <header className="flex flex-wrap items-start justify-between gap-6 border-b border-border pb-6">
-        <div className="flex min-w-0 flex-1 items-start gap-4">
-          <span className="grid size-14 shrink-0 place-items-center rounded-lg border border-brand-sky/25 bg-brand-sky/10 text-brand-sky sm:size-16"><BookOpen className="size-7" /></span>
+      <header className="rise-in relative flex flex-wrap items-start justify-between gap-6 overflow-hidden rounded-2xl border border-border bg-card bg-gradient-surface p-5 shadow-card sm:p-7">
+        <div aria-hidden className="pointer-events-none absolute -top-24 -right-20 size-64 rounded-full bg-primary/15 blur-3xl" />
+        <div className="relative flex min-w-0 flex-1 items-start gap-4">
+          <span className="icon-chip size-14 shadow-glow sm:size-16"><BookOpen className="size-7" /></span>
           <div className="min-w-0 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Study pod</span>
-              {currentPod.course_code ? <Badge variant="secondary">{currentPod.course_code}</Badge> : null}
+              {currentPod.course_code ? <Badge variant="sky">{currentPod.course_code}</Badge> : null}
             </div>
             <h1 className="display break-words text-3xl font-semibold leading-tight sm:text-4xl">{currentPod.name}</h1>
             {currentPod.description ? <p className="max-w-2xl whitespace-pre-line break-words text-sm leading-relaxed text-muted-foreground">{currentPod.description}</p> : null}
@@ -94,14 +95,14 @@ function PodWorkspacePage() {
           </div>
         </div>
         {code ? (
-          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+          <div className="relative flex w-full flex-wrap gap-2 sm:w-auto">
             <Button size="sm" variant="outline" onClick={() => void copyInvite(inviteLink(code))}>{copied ? <Check className="size-4" /> : <Link2 className="size-4" />} Copy invite link</Button>
             <Button size="sm" variant="secondary" asChild><a href={`https://wa.me/?text=${encodeURIComponent(`Join my study pod "${currentPod.name}" on Study Notes: ${inviteLink(code)}`)}`} target="_blank" rel="noreferrer"><MessageCircle className="size-4" /> Share to WhatsApp</a></Button>
           </div>
         ) : null}
       </header>
       {currentPod.description || currentPod.rules ? (
-        <section className="flex items-start gap-3 border-l-2 border-brand-amber bg-brand-amber/5 px-4 py-3">
+        <section className="flex items-start gap-3 rounded-xl border border-brand-amber/25 border-l-2 border-l-brand-amber bg-brand-amber/5 px-4 py-3">
           <Pin className="mt-0.5 size-4 shrink-0 text-brand-amber" />
           <div className="min-w-0 space-y-1.5">
             <h2 className="font-sans text-sm font-semibold">Pinned Resources &amp; Rules</h2>
@@ -110,7 +111,7 @@ function PodWorkspacePage() {
         </section>
       ) : null}
       <Tabs defaultValue="notes" className="min-w-0 gap-6">
-        <TabsList className="grid h-auto w-full grid-cols-4 rounded-none border-b border-border bg-transparent p-0">
+        <TabsList className="grid h-auto w-full grid-cols-4 rounded-none border-x-0 border-t-0 border-b border-border bg-transparent p-0">
           {([
             { value: "notes", label: "Notes", icon: FileText, active: "data-[state=active]:border-brand-sky data-[state=active]:text-brand-sky" },
             { value: "flashcards", label: "Flashcards", icon: Layers, active: "data-[state=active]:border-brand-teal data-[state=active]:text-brand-teal" },

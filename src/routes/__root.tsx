@@ -108,10 +108,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+// Applies a saved light-mode choice before paint so dark-by-default never flashes.
+const THEME_BOOT = `try{if(localStorage.getItem("study-notes-theme")==="light")document.documentElement.classList.remove("dark")}catch(e){}`;
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
         <HeadContent />
       </head>
       <body>

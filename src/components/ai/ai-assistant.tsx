@@ -108,8 +108,9 @@ export function AiAssistant({ inline = false, compact = false }: { inline?: bool
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-md">
           <SheetHeader>
-            <SheetTitle className="display flex items-center gap-2">
-              <Sparkles className="size-5 text-ai" /> AI assistant
+            <SheetTitle className="display flex items-center gap-3 text-xl">
+              <span className="icon-chip size-10 shadow-glow logo-glow"><Sparkles className="size-5" /></span>
+              <span className="text-gradient">AI Assistant</span>
             </SheetTitle>
             <SheetDescription>
               Pick a recording or note, then run a quick action on it.
@@ -139,7 +140,7 @@ export function AiAssistant({ inline = false, compact = false }: { inline?: bool
                 <Button
                   key={key}
                   variant={action === key ? "default" : "outline"}
-                  className="justify-start gap-2"
+                  className="h-11 justify-start gap-3 rounded-xl"
                   disabled={!note || busy}
                   onClick={() => void run(key)}
                 >
@@ -151,25 +152,33 @@ export function AiAssistant({ inline = false, compact = false }: { inline?: bool
             {note && source ? (
               <div className="space-y-1">
                 <p className="text-sm font-medium">Transcript</p>
-                <div className="max-h-56 overflow-y-auto whitespace-pre-wrap rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                <div className="max-h-56 overflow-y-auto whitespace-pre-wrap rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm text-muted-foreground">
                   {source}
                 </div>
               </div>
             ) : null}
 
             {note && !source && (
-              <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+              <p className="rounded-xl border border-brand-amber/30 bg-brand-amber/10 p-3 text-sm text-muted-foreground">
                 This note has no transcript yet — add one, or transcribe the audio, to use the
                 assistant.
               </p>
             )}
 
+            {busy ? (
+              <div className="space-y-2 rounded-xl border border-primary/20 p-4" aria-label="AI is working">
+                <Skeleton className="h-4 w-11/12" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            ) : null}
+
             {results.length > 0 && (
-              <ul className="space-y-2 rounded-lg border border-border p-4 text-sm">
+              <ul className="glow-ring rise-in space-y-2.5 rounded-xl bg-card bg-gradient-surface p-4 text-sm shadow-glow">
                 {results.map((line) => (
                   <li key={line} className="flex gap-2">
-                    <span className="text-ai">•</span>
-                    <span>{line}</span>
+                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-gradient-primary" />
+                    <span className="leading-relaxed">{line}</span>
                   </li>
                 ))}
               </ul>

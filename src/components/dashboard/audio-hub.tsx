@@ -328,14 +328,14 @@ export function AudioHub({
   }
 
   return (
-    <Card className={`relative overflow-hidden transition-shadow duration-300 ${focus ? "rounded-none border-0 bg-transparent shadow-none" : `border-brand-sky/25 bg-card shadow-card ${recording ? "recording-glow" : ""}`}`}>
+    <Card className={`relative overflow-hidden transition-shadow duration-300 ${focus ? "rounded-none border-0 bg-transparent bg-none! shadow-none" : `border-brand-sky/25 bg-card shadow-card ${recording ? "recording-glow" : ""}`}`}>
       <CardContent className={focus ? "flex flex-col gap-3 p-0" : "flex flex-col gap-5 p-5 sm:p-6"}>
         {focus && <AiAudioVisual recording={recording} />}
         <div className="flex flex-col gap-5">
           <details className={`min-w-0 grow space-y-4 ${focus ? "order-2 text-left" : ""}`} open={focus ? undefined : true}>
             <summary className={focus ? "mx-auto w-fit cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground" : "hidden"}>Recording options · {plan.tier} plan</summary>
             <div className="flex items-center gap-2">
-              <span className={`relative grid size-10 place-items-center rounded-lg border border-brand-sky/25 bg-brand-sky/10 text-brand-sky ${recording ? "mic-pulse" : ""}`}><Mic className="size-5" /></span>
+              <span className={`icon-chip relative size-10 ${recording ? "mic-pulse" : ""}`}><Mic className="size-5" /></span>
               <h2 className="text-lg font-semibold tracking-normal">Lecture recording</h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">

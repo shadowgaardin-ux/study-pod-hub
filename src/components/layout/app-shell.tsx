@@ -67,10 +67,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             hash={targetHash}
             aria-current={active ? "page" : undefined}
             onClick={() => setMobileOpen(false)}
-            className={`group flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
               active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-card"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground [&>svg]:group-hover:text-brand-sky"
+                ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                : "text-muted-foreground hover:translate-x-0.5 hover:bg-secondary/80 hover:text-foreground [&>svg]:group-hover:text-brand-sky"
             }`}
           >
             <Icon className="size-4" />
@@ -91,7 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </Button>
       </div>
       <div className="mt-3 flex min-w-0 items-center gap-3 border-t border-sidebar-border px-2 pt-5">
-        <Avatar className="size-9 shrink-0"><AvatarImage src={profile?.avatar_url ?? undefined} alt="" /><AvatarFallback>{initials(profile?.full_name || user?.email)}</AvatarFallback></Avatar>
+        <Avatar className="size-9 shrink-0 ring-2 ring-primary/30"><AvatarImage src={profile?.avatar_url ?? undefined} alt="" /><AvatarFallback>{initials(profile?.full_name || user?.email)}</AvatarFallback></Avatar>
         <div className="min-w-0"><p className="truncate text-sm font-semibold">{profile?.full_name || "Student"}</p><p className="text-xs text-muted-foreground">{profile?.tier ?? "Free"} plan</p></div>
       </div>
     </nav>
@@ -109,13 +109,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar bg-[image:radial-gradient(ellipse_80%_30%_at_0%_0%,var(--ambient-1),transparent)] lg:flex">
         {brand}
         {nav}
       </aside>
 
       <div className="min-w-0 lg:pl-64">
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-xl sm:px-8">
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between gap-3 border-b border-border/70 glass px-4 sm:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-5">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
@@ -136,7 +136,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="hidden sm:inline-flex">
+            <Badge variant="soft" className="hidden sm:inline-flex">
               {profile?.tier ?? "Free"} plan
             </Badge>
             <ThemeToggle />
