@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { studyAction } from "@/lib/ai.functions";
-import { HelpCircle, KeyRound, List, Loader2, Sparkles } from "lucide-react";
+import { ArrowUp, HelpCircle, KeyRound, List, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -33,10 +33,10 @@ interface SourceNote {
 
 type Action = "bullets" | "terms" | "quiz";
 
-const ACTIONS: { key: Action; label: string; icon: typeof List }[] = [
-  { key: "bullets", label: "Generate bullet points", icon: List },
-  { key: "terms", label: "Extract key terms", icon: KeyRound },
-  { key: "quiz", label: "Create quiz questions", icon: HelpCircle },
+const ACTIONS: { key: Action; label: string; short: string; icon: typeof List }[] = [
+  { key: "bullets", label: "Generate bullet points", short: "Bullet points", icon: List },
+  { key: "terms", label: "Extract key terms", short: "Key terms", icon: KeyRound },
+  { key: "quiz", label: "Create quiz questions", short: "Quiz questions", icon: HelpCircle },
 ];
 
 export function AiAssistant({ inline = false, compact = false }: { inline?: boolean; compact?: boolean }) {
@@ -106,83 +106,117 @@ export function AiAssistant({ inline = false, compact = false }: { inline?: bool
       </Button>}
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto bg-card bg-gradient-surface sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="display flex items-center gap-3 text-xl">
-              <span className="icon-chip size-10 shadow-glow logo-glow"><Sparkles className="size-5" /></span>
-              <span className="text-gradient">AI Assistant</span>
-            </SheetTitle>
-            <SheetDescription>
-              Pick a recording or note, then run a quick action on it.
-            </SheetDescription>
-          </SheetHeader>
+        <SheetContent className="ai-stage flex w-full flex-col gap-0 p-0 sm:max-w-md">
+          <div className="flex justify-center px-6 pt-5">
+            <span className="glass inline-flex items-center gap-2 rounded-full border border-border/60 px-3 py-1.5">
+              <span className="relative size-5 overflow-hidden rounded-full bg-gradient-ai" aria-hidden="true" />
+              <span className="text-left leading-tight">
+                <span className="block text-xs font-semibold">Study AI</span>
+                <span className="block text-[10px] text-muted-foreground">AI Assistant</span>
+              </span>
+            </span>
+          </div>
 
-          <div className="space-y-4 px-6 pb-8">
-            {notes.isLoading ? (
-              <Skeleton className="h-10 rounded-md" />
-            ) : (
-              <Select value={noteId} onValueChange={(v) => { setNoteId(v); setResults([]); setAction(null); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a recording or note" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(notes.data ?? []).map((n) => (
-                    <SelectItem key={n.id} value={n.id}>
-                      {n.title}
-                    </SelectItem>
+          <div className="flex-1 overflow-y-auto px-6 pb-4">
+            <div className={`ai-orb mt-6 ${results.length || busy ? "is-small" : ""} ${busy ? "is-thinking" : ""}`} aria-hidden="true">
+              <span className="ai-orb-layer ai-orb-glow" />
+              <span className="ai-orb-layer ai-orb-fibres" />
+              <span className="ai-orb-layer ai-orb-fibres alt" />
+              <span className="ai-orb-core" />
+            </div>
+
+            <SheetHeader className="mt-5 items-center space-y-1 text-center sm:text-center">
+              <p className="text-sm text-muted-foreground">Hi, I'm your study assistant!</p>
+              <SheetTitle className="display text-2xl leading-tight">
+                {busy ? "Thinking it through…" : "How can I help you today?"}
+              </SheetTitle>
+              <SheetDescription className="max-w-xs">
+                {note ? <>Working with <span className="font-medium text-foreground">{note.title}</span></> : "Choose a recording or note below, then pick an action."}
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="mt-6 space-y-4">
+              {note && !source && (
+                <p className="rounded-2xl border border-brand-amber/30 bg-brand-amber/10 p-3 text-sm text-muted-foreground">
+                  This note has no transcript yet — add one, or transcribe the audio, to use the assistant.
+                </p>
+              )}
+
+              {busy ? (
+                <div className="space-y-2 rounded-2xl border border-border/60 bg-card/60 p-4" aria-label="AI is working">
+                  <Skeleton className="h-4 w-11/12" />
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ) : null}
+
+              {results.length > 0 && (
+                <ul className="glow-ring rise-in space-y-2.5 rounded-2xl bg-card bg-gradient-surface p-4 text-sm shadow-glow">
+                  {results.map((line) => (
+                    <li key={line} className="flex gap-2">
+                      <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-gradient-ai" />
+                      <span className="leading-relaxed">{line}</span>
+                    </li>
                   ))}
-                </SelectContent>
-              </Select>
-            )}
+                </ul>
+              )}
 
-            <div className="grid gap-2">
-              {ACTIONS.map(({ key, label, icon: Icon }) => (
-                <Button
+              {note && source ? (
+                <details className="group rounded-2xl border border-border/60 bg-card/40 px-4 py-3 text-sm">
+                  <summary className="cursor-pointer list-none font-medium text-muted-foreground transition-colors hover:text-foreground">
+                    View transcript
+                  </summary>
+                  <div className="mt-3 max-h-56 overflow-y-auto whitespace-pre-wrap text-muted-foreground">{source}</div>
+                </details>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="space-y-3 border-t border-border/40 px-4 pt-3 pb-5">
+            <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4" role="group" aria-label="AI actions">
+              {ACTIONS.map(({ key, label, short, icon: Icon }) => (
+                <button
                   key={key}
-                  variant={action === key ? "default" : "outline"}
-                  className="h-11 justify-start gap-3 rounded-xl"
+                  type="button"
+                  data-active={action === key}
                   disabled={!note || busy}
                   onClick={() => void run(key)}
+                  aria-label={label}
+                  className="ai-chip inline-flex h-9 shrink-0 items-center gap-2 rounded-full border border-border/70 bg-card/70 px-3.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {busy && action === key ? <Loader2 className="size-4 animate-spin" /> : <Icon className="size-4" />} {label}
-                </Button>
+                  {busy && action === key ? <Loader2 className="size-3.5 animate-spin" /> : <Icon className="size-3.5 text-brand-pink" />}
+                  {short}
+                </button>
               ))}
             </div>
 
-            {note && source ? (
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Transcript</p>
-                <div className="max-h-56 overflow-y-auto whitespace-pre-wrap rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm text-muted-foreground">
-                  {source}
-                </div>
-              </div>
-            ) : null}
-
-            {note && !source && (
-              <p className="rounded-xl border border-brand-amber/30 bg-brand-amber/10 p-3 text-sm text-muted-foreground">
-                This note has no transcript yet — add one, or transcribe the audio, to use the
-                assistant.
-              </p>
-            )}
-
-            {busy ? (
-              <div className="space-y-2 rounded-xl border border-primary/20 p-4" aria-label="AI is working">
-                <Skeleton className="h-4 w-11/12" />
-                <Skeleton className="h-4 w-4/5" />
-                <Skeleton className="h-4 w-2/3" />
-              </div>
-            ) : null}
-
-            {results.length > 0 && (
-              <ul className="glow-ring rise-in space-y-2.5 rounded-xl bg-card bg-gradient-surface p-4 text-sm shadow-glow">
-                {results.map((line) => (
-                  <li key={line} className="flex gap-2">
-                    <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-gradient-primary" />
-                    <span className="leading-relaxed">{line}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div className="glass flex items-center gap-2 rounded-full border border-border/70 p-1.5 pl-2">
+              {notes.isLoading ? (
+                <Skeleton className="h-9 flex-1 rounded-full" />
+              ) : (
+                <Select value={noteId} onValueChange={(v) => { setNoteId(v); setResults([]); setAction(null); }}>
+                  <SelectTrigger className="h-9 min-w-0 flex-1 rounded-full border-0 bg-transparent shadow-none focus:ring-0" aria-label="Recording or note">
+                    <SelectValue placeholder="Choose a recording or note…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(notes.data ?? []).length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">No notes yet — record a lecture first.</div>
+                    ) : (notes.data ?? []).map((n) => (
+                      <SelectItem key={n.id} value={n.id}>{n.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <button
+                type="button"
+                onClick={() => void run(action ?? "bullets")}
+                disabled={!source || busy}
+                aria-label={`Run ${ACTIONS.find((a) => a.key === (action ?? "bullets"))?.label.toLowerCase()}`}
+                className="ai-send grid size-10 shrink-0 place-items-center rounded-full bg-gradient-ai text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {busy ? <Loader2 className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}
+              </button>
+            </div>
           </div>
         </SheetContent>
       </Sheet>

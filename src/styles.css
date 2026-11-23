@@ -502,3 +502,49 @@
 @media (prefers-reduced-motion: no-preference) {
   a:hover > [data-slot="card"], [data-slot="card"].lift:hover { box-shadow: var(--shadow-card), var(--glow-primary); }
 }
+
+/* ---------------------------------------------------------------------------
+ * AI Assistant — iridescent orb, action chips and pill composer.
+ * ------------------------------------------------------------------------- */
+:root {
+  --gradient-ai: linear-gradient(135deg, var(--brand-purple), var(--brand-pink) 55%, var(--brand-coral));
+  --gradient-ai-spectrum: conic-gradient(from 0deg, var(--brand-purple), var(--brand-pink), var(--brand-coral), var(--brand-amber), var(--brand-sky), var(--brand-purple));
+}
+@utility bg-gradient-ai { background-image: var(--gradient-ai); }
+.ai-stage {
+  background:
+    radial-gradient(60% 40% at 50% 28%, color-mix(in oklab, var(--brand-purple) 22%, transparent), transparent 70%),
+    radial-gradient(50% 30% at 50% 100%, color-mix(in oklab, var(--brand-pink) 14%, transparent), transparent 70%),
+    var(--background);
+}
+.ai-orb { position: relative; width: 190px; aspect-ratio: 1; margin-inline: auto; transition: width 400ms ease; }
+.ai-orb.is-small { width: 96px; }
+.ai-orb-layer {
+  position: absolute; inset: 0;
+  background: var(--gradient-ai-spectrum);
+  animation: ai-orb-spin 14s linear infinite, ai-orb-morph 9s ease-in-out infinite alternate;
+}
+.ai-orb-fibres {
+  -webkit-mask: repeating-conic-gradient(#000 0 1.2deg, transparent 1.2deg 4deg), radial-gradient(circle, transparent 30%, #000 44%, #000 64%, transparent 71%);
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+  mask: repeating-conic-gradient(#000 0 1.2deg, transparent 1.2deg 4deg), radial-gradient(circle, transparent 30%, #000 44%, #000 64%, transparent 71%);
+}
+.ai-orb-fibres.alt { opacity: .7; animation-direction: reverse; animation-duration: 20s, 11s; transform: scale(.9); }
+.ai-orb-glow { filter: blur(26px); opacity: .45; -webkit-mask: radial-gradient(circle, transparent 35%, #000 55%, transparent 72%); mask: radial-gradient(circle, transparent 35%, #000 55%, transparent 72%); }
+.ai-orb-core { position: absolute; inset: 31%; border-radius: 50%; background: radial-gradient(circle at 40% 35%, color-mix(in oklab, var(--brand-purple) 30%, var(--background)), var(--background) 70%); box-shadow: inset 0 0 24px color-mix(in oklab, var(--brand-pink) 30%, transparent); }
+.ai-orb.is-thinking .ai-orb-layer { animation-duration: 3s, 2.4s; }
+.ai-orb.is-thinking .ai-orb-fibres.alt { animation-duration: 4s, 2s; }
+@keyframes ai-orb-spin { to { rotate: 360deg; } }
+@keyframes ai-orb-morph {
+  0% { border-radius: 50% 46% 52% 48% / 48% 52% 46% 50%; }
+  50% { border-radius: 44% 56% 48% 52% / 56% 44% 54% 46%; }
+  100% { border-radius: 54% 46% 56% 44% / 46% 54% 44% 56%; }
+}
+.ai-chip { transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease; }
+.ai-chip:not(:disabled):hover { transform: translateY(-1px); border-color: color-mix(in oklab, var(--brand-pink) 45%, var(--border)); }
+.ai-chip[data-active="true"] { border-color: color-mix(in oklab, var(--brand-pink) 60%, transparent); background: color-mix(in oklab, var(--brand-pink) 14%, var(--card)); box-shadow: 0 0 18px -6px var(--brand-pink); }
+.ai-send { box-shadow: 0 0 0 4px color-mix(in oklab, var(--brand-pink) 14%, transparent), 0 8px 22px -6px color-mix(in oklab, var(--brand-pink) 70%, transparent); transition: transform 180ms ease, box-shadow 180ms ease; }
+.ai-send:not(:disabled):hover { transform: scale(1.06); }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+html:not(.dark) .ai-orb-fibres { filter: brightness(1.3) saturate(1.15); }
