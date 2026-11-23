@@ -89,7 +89,7 @@ export function PersonalLibrary({
 
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="stagger grid gap-3 min-[640px]:grid-cols-2">
         {notes.data.map((note) => (
           <Card key={note.id}>
             <CardContent className="flex h-full flex-col gap-3 pt-6">
@@ -104,20 +104,20 @@ export function PersonalLibrary({
                   </p>
                 </div>
               </div>
-              <button
+              <Button variant="ghost"
                 type="button"
                 onClick={() => setViewing(note)}
-                className="rounded-md bg-muted/60 p-3 text-left text-sm text-muted-foreground transition-colors hover:bg-muted"
+                className="h-auto justify-start whitespace-normal rounded-md bg-muted/40 p-3 text-left text-sm font-normal text-muted-foreground hover:bg-muted"
               >
                 {note.transcript || note.summary ? (
                   <span className="line-clamp-3">{note.transcript || note.summary}</span>
                 ) : (
                   <span className="italic">No transcript yet — tap to open and transcribe.</span>
                 )}
-              </button>
+              </Button>
               <div className="mt-auto flex flex-col gap-2">
                 <Button size="sm" className="w-full gap-2" onClick={() => setViewing(note)}>
-                  <Eye className="size-4" /> Open & edit transcript
+                  <Eye className="size-4" /> Open note
                 </Button>
                 <Button
                   size="sm"
