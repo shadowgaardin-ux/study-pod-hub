@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
 
 import { GlobalSearch } from "@/components/dashboard/global-search";
+import { HelpMenu, TourProvider } from "@/components/onboarding/onboarding-tour";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -33,12 +34,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { initials } from "@/lib/queries";
 
 const NAV = [
-  { to: "/dashboard", hash: "", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/dashboard", hash: "library", label: "My Library", icon: Library },
-  { to: "/pods", hash: "", label: "Study Pods", icon: Users },
-  { to: "/dashboard", hash: "recording", label: "Lecture Recording", icon: Mic },
-  { to: "/dashboard", hash: "assistant", label: "AI Assistant", icon: Sparkles },
-  { to: "/billing", hash: "", label: "Billing & Plans", icon: CreditCard },
+  { to: "/dashboard", hash: "", label: "Dashboard", icon: LayoutDashboard, tour: "nav-dashboard" },
+  { to: "/dashboard", hash: "library", label: "My Library", icon: Library, tour: "nav-library" },
+  { to: "/pods", hash: "", label: "Study Pods", icon: Users, tour: "nav-pods" },
+  { to: "/dashboard", hash: "recording", label: "Lecture Recording", icon: Mic, tour: "nav-recording" },
+  { to: "/dashboard", hash: "assistant", label: "AI Assistant", icon: Sparkles, tour: "nav-assistant" },
+  { to: "/billing", hash: "", label: "Billing & Plans", icon: CreditCard, tour: "nav-billing" },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -58,13 +59,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   const nav = (
     <nav className="flex min-h-0 flex-1 flex-col gap-1.5 px-4 py-5" aria-label="Main navigation">
       <p className="mb-2 px-3 text-[11px] font-semibold uppercase text-muted-foreground">Workspace</p>
-      {NAV.map(({ to, hash: targetHash, label, icon: Icon }) => {
+      {NAV.map(({ to, hash: targetHash, label, icon: Icon, tour }) => {
         const active = (pathname === to && hash === targetHash) || (to === "/pods" && pathname.startsWith("/pod/"));
         return (
           <Link
             key={label}
             to={to}
             hash={targetHash}
+            data-tour={tour}
             aria-current={active ? "page" : undefined}
             onClick={() => setMobileOpen(false)}
             className={`group relative flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
@@ -108,6 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   return (
+    <TourProvider>
     <div className="min-h-screen bg-background">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar bg-[image:radial-gradient(ellipse_80%_30%_at_0%_0%,var(--ambient-1),transparent)] lg:flex">
         {brand}
@@ -139,8 +142,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Badge variant="soft" className="hidden sm:inline-flex">
               {profile?.tier ?? "Free"} plan
             </Badge>
+            <HelpMenu />
             <ThemeToggle />
-            <Button asChild variant="ghost" size="icon" aria-label="Settings">
+            <Button asChild variant="ghost" size="icon" aria-label="Settings" className="hidden sm:inline-flex">
               <Link to="/settings">
                 <Settings className="size-5" />
               </Link>
@@ -176,5 +180,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="mx-auto max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">{children}</main>
       </div>
     </div>
+    </TourProvider>
   );
 }

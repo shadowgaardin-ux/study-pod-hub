@@ -52,16 +52,16 @@ function DashboardPage() {
         <section className="mx-auto flex max-w-2xl flex-col items-center text-center">
           <p className="mb-3 text-xs text-muted-foreground sm:mb-5">Welcome back, {firstName}</p>
           <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase text-brand-sky"><Sparkles className="size-3.5" />Your AI study space</p>
-          <h1 className="text-3xl leading-tight font-bold sm:text-4xl">Study Pods Hub</h1>
+          <h1 data-tour="dashboard-hero" className="text-3xl leading-tight font-bold sm:text-4xl">Study Pods Hub</h1>
           <p className="mt-3 text-lg font-medium text-foreground">Less note-taking. More understanding.</p>
           <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">Record your lectures and turn them into transcripts, summaries, bullet points, flashcards and quizzes with AI.</p>
           <div id="recording" className="mt-2 w-full scroll-mt-28">
             <AudioHub pods={pods.data} userId={user?.id} focus />
           </div>
           <div id="assistant" className="mt-3 flex flex-wrap items-center justify-center gap-1 sm:gap-4">
-            <AiAssistant inline compact />
-            <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => void navigate({ to: "/dashboard", hash: "library" })}><Library className="size-4 text-brand-sky" />My Library</Button>
-            <Button variant="ghost" className="text-sm text-muted-foreground" onClick={() => setJoinOpen(true)}><Users className="size-4 text-brand-amber" />Join a pod</Button>
+            <span data-tour="dashboard-assistant" className="inline-flex"><AiAssistant inline compact /></span>
+            <Button data-tour="dashboard-library" variant="ghost" className="text-sm text-muted-foreground" onClick={() => void navigate({ to: "/dashboard", hash: "library" })}><Library className="size-4 text-brand-sky" />My Library</Button>
+            <Button data-tour="dashboard-pods" variant="ghost" className="text-sm text-muted-foreground" onClick={() => setJoinOpen(true)}><Users className="size-4 text-brand-amber" />Join a pod</Button>
           </div>
         </section>
         {latestNote && <section className="mx-auto mt-5 max-w-xl border-t border-border pt-3">

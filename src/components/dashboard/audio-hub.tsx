@@ -419,6 +419,7 @@ export function AudioHub({
             )}
             <Button
               onClick={recording ? stopRecording : () => void startRecording()}
+              data-tour={focus ? "record-button" : undefined}
               disabled={busy || (!recording && atRecordingLimit)}
               variant={recording ? "destructive" : "default"}
               className={focus ? `ai-record-button h-16 w-full max-w-72 gap-3 rounded-full px-8 text-base font-semibold ${recording ? "" : "bg-brand-gradient"}` : "h-10 gap-2 px-5"}

@@ -37,3 +37,7 @@
 - [ ] Verify paid-plan activation and two-account pod approval lifecycle; requires approved payment test and second-account authorization.
 # Colour & motion across app
 - [x] Dashboard, pods, sidebar and recording panel colour/animation polish.
+
+# First-time onboarding tour
+- [x] Six-step spotlight tour (Dashboard, Record with AI, Library, Study Pods, AI Assistant, Finish) with Next/Back/Skip/progress, auto-shown once per user.
+- [x] Help button to replay the tour and open the tutorial video (shown as coming soon until a video exists); verify desktop/mobile/both themes.

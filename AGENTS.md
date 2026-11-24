@@ -22,3 +22,4 @@
 - Quote search filter literals and neutralize spreadsheet formula cells in exports; user content must not become query syntax or executable formulas.
 - Plan activation uses the service-role RPC when SUPABASE_SERVICE_ROLE_KEY exists, else a proof-gated RPC (hashed PAYMENT_ACTIVATION_SECRET); non-Lovable hosts like Vercel lack the admin key.
 - Open signed-in screens with the shared `PageHeader` and style surfaces through shared primitives/utilities (Card, Button, Badge, `icon-chip`, `glow-ring`); page-level one-off styling drifts from the single design language.
+- Onboarding tour state lives in the signed-in user's auth metadata (cross-device) with a per-user localStorage cache; tour targets use `data-tour` attributes with visible-element fallbacks so the sidebar-less mobile layout still works.
