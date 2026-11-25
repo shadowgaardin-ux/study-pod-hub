@@ -13,7 +13,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
-import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
+import { StudyNotesBrand } from "@/components/study-notes-brand";
 
 import { GlobalSearch } from "@/components/dashboard/global-search";
 import { HelpMenu, TourProvider } from "@/components/onboarding/onboarding-tour";
@@ -100,12 +100,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 
   const brand = (
-    <Link to="/dashboard" className="flex h-20 shrink-0 items-center border-b border-sidebar-border px-6" aria-label="Study Notes Hub dashboard">
-      <img
-        src={logoUrl}
-        alt="Study Notes Hub"
-        className="h-10 max-w-full w-auto object-contain transition-transform duration-300 hover:scale-105 dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
-      />
+    <Link to="/dashboard" className="flex h-20 shrink-0 items-center border-b border-sidebar-border px-6" aria-label="Study Notes dashboard">
+      <StudyNotesBrand />
     </Link>
   );
 

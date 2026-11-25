@@ -23,3 +23,5 @@
 - Plan activation uses the service-role RPC when SUPABASE_SERVICE_ROLE_KEY exists, else a proof-gated RPC (hashed PAYMENT_ACTIVATION_SECRET); non-Lovable hosts like Vercel lack the admin key.
 - Open signed-in screens with the shared `PageHeader` and style surfaces through shared primitives/utilities (Card, Button, Badge, `icon-chip`, `glow-ring`); page-level one-off styling drifts from the single design language.
 - Onboarding tour state lives in the signed-in user's auth metadata (cross-device) with a per-user localStorage cache; tour targets use `data-tour` attributes with visible-element fallbacks so the sidebar-less mobile layout still works.
+- Render the shared brand component with the approved emblem and a text wordmark so the displayed app name stays consistent across navigation and public screens.
+- Keep recording/upload actions in AudioHub; advance processing status only after storage upload and note insertion succeed, and reuse the existing transcription function and NoteViewer for results.

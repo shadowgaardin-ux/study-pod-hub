@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
+import { StudyNotesBrand } from "@/components/study-notes-brand";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,12 +34,8 @@ function LandingPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Link to="/" className="flex items-center" aria-label="Study Notes Hub home">
-            <img
-              src={logoUrl}
-              alt="Study Notes Hub"
-              className="h-9 w-auto transition-transform duration-300 hover:scale-105 dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
-            />
+          <Link to="/" className="flex items-center" aria-label="Study Notes home">
+            <StudyNotesBrand />
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />

@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
+import { StudyNotesBrand } from "@/components/study-notes-brand";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -63,11 +63,7 @@ function JoinPage() {
     <div className="aurora grid min-h-screen place-items-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
-          <img
-            src={logoUrl}
-            alt="Study Notes Hub"
-            className="logo-glow h-10 w-auto dark:rounded-md dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-2 dark:py-1"
-          />
+          <StudyNotesBrand />
           <CardTitle className="display text-2xl">Join a study pod</CardTitle>
           <CardDescription>
             {user

@@ -1,4 +1,8 @@
 # App-wide premium AI style
+# Recording flow and Study Notes naming
+- [ ] Standardize the app name and simplify the recording/upload entry with collapsed settings and smaller audio artwork.
+- [ ] Show saving, processing and transcript-ready states while preserving the existing transcription and durable-save workflow; verify recording/upload, themes, mobile and tests.
+
 - [x] Shared gradients/glow/shimmer, dark default, restyled buttons, cards, tags, tabs and empty states.
 - [x] Consistent headers and polish on Library, Study Pods, AI Assistant, Recording, Billing, Settings and pod workspace; verify desktop/mobile and both themes.
 

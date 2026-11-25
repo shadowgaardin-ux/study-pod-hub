@@ -1,7 +1,7 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
 
-import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
+import { StudyNotesBrand } from "@/components/study-notes-brand";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -53,11 +53,7 @@ function PlanScreen() {
 
       <main className="mx-auto max-w-6xl px-5 pb-20">
         <div className="text-center">
-          <img
-            src={logoUrl}
-            alt="Study Notes Hub"
-            className="mx-auto h-12 w-auto dark:rounded-lg dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-3 dark:py-2"
-          />
+          <StudyNotesBrand />
           <h1 className="display mt-4 text-3xl font-semibold sm:text-4xl">Choose your plan</h1>
           <p className="mt-3 text-muted-foreground">
             Start free and upgrade any time — your choice is saved to your profile at sign up.

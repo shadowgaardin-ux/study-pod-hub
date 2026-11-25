@@ -379,7 +379,7 @@
   align-items: center;
   justify-content: center;
   gap: 18px;
-  height: 180px;
+  height: 112px;
   width: 100%;
   max-width: 600px;
   margin-inline: auto;
@@ -390,7 +390,7 @@
 .audio-orbits ellipse:nth-child(3) { color: var(--brand-amber); animation-delay: -6s; }
 .audio-core { position: relative; display: grid; place-items: center; width: 76px; height: 76px; flex-shrink: 0; border-radius: 50%; border: 1px solid color-mix(in oklab, var(--primary) 45%, transparent); background: var(--accent); color: var(--primary); box-shadow: 0 0 32px color-mix(in oklab, var(--primary) 14%, transparent); }
 .audio-spark { position: absolute; right: -2px; top: 2px; color: var(--brand-amber); }
-.audio-wave { display: flex; align-items: center; justify-content: center; gap: 4px; height: 76px; width: 116px; }
+.audio-wave { display: flex; align-items: center; justify-content: center; gap: 4px; height: 42px; width: 116px; }
 .audio-line { flex: 1; min-width: 2px; max-width: 3px; border-radius: 999px; background: var(--brand-sky); height: 35%; transform-origin: center; animation: audio-wave 3s ease-in-out infinite alternate; }
 .audio-wave-right .audio-line { background: var(--brand-purple); }
 .audio-line-0 { height: 14%; animation-delay: -.4s; }
@@ -406,9 +406,9 @@
 @keyframes audio-wave { from { transform: scaleY(.65); opacity: .55; } to { transform: scaleY(1); opacity: 1; } }
 @keyframes audio-orbit { from { transform: rotate(-8deg) scale(.96); } to { transform: rotate(8deg) scale(1); } }
 @media (max-width: 480px) {
-  .ai-audio-visual { height: 144px; gap: 12px; }
+  .ai-audio-visual { height: 92px; gap: 12px; }
   .audio-wave { width: 86px; gap: 3px; }
-  .audio-core { width: 68px; height: 68px; }
+  .audio-core { width: 56px; height: 56px; }
 }
 
 /* ---------------------------------------------------------------------------

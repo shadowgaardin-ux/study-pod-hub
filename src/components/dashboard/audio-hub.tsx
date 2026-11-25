@@ -1,12 +1,19 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Mic, Square, Upload } from "lucide-react";
+import { Check, ChevronDown, Loader2, Mic, Square, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { AiAudioVisual } from "@/components/dashboard/ai-audio-visual";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { NoteViewer, type ViewableNote } from "@/components/notes/note-viewer";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -58,8 +65,7 @@ type SpeechRecognitionEventLike = {
 function getSpeechRecognition(): (new () => SpeechRecognitionInstance) | null {
   const w = window as unknown as Record<string, unknown>;
   return (w["SpeechRecognition"] ?? w["webkitSpeechRecognition"] ?? null) as
-    | (new () => SpeechRecognitionInstance)
-    | null;
+    (new () => SpeechRecognitionInstance) | null;
 }
 
 export function AudioHub({
@@ -81,6 +87,13 @@ export function AudioHub({
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<
+    "idle" | "starting" | "saving" | "processing" | "ready" | "error"
+  >("idle");
+  const [statusError, setStatusError] = useState("");
+  const [savedNote, setSavedNote] = useState<ViewableNote | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const uploadRef = useRef<HTMLInputElement | null>(null);
   const [recovered, setRecovered] = useState<{ sessionId: string; size: number } | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
@@ -117,7 +130,9 @@ export function AudioHub({
   // Auto-stop when the plan's max recording length is reached.
   useEffect(() => {
     if (recording && elapsed >= maxSeconds) {
-      toast.info(`Your ${plan.tier} plan allows up to ${plan.maxRecordingMinutes} minutes per recording — stopping and saving now.`);
+      toast.info(
+        `Your ${plan.tier} plan allows up to ${plan.maxRecordingMinutes} minutes per recording — stopping and saving now.`,
+      );
       stopRecording();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -126,61 +141,89 @@ export function AudioHub({
   // A recording interrupted by a reload or network drop is still in IndexedDB.
   useEffect(() => {
     if (!userId) return;
-    void listBufferedSessions(userId).then((sessions) => {
-      const latest = sessions[0];
-      if (latest) {
-        sessionRef.current = latest.sessionId;
-        setRecovered({ sessionId: latest.sessionId, size: latest.size });
-        const saved = localStorage.getItem(`transcript:${latest.sessionId}`);
-        if (saved) {
-          transcriptRef.current = saved;
-          setLiveTranscript(saved);
+    void listBufferedSessions(userId)
+      .then((sessions) => {
+        const latest = sessions[0];
+        if (latest) {
+          sessionRef.current = latest.sessionId;
+          setRecovered({ sessionId: latest.sessionId, size: latest.size });
+          const saved = localStorage.getItem(`transcript:${latest.sessionId}`);
+          if (saved) {
+            transcriptRef.current = saved;
+            setLiveTranscript(saved);
+          }
         }
-      }
-    }).catch(() => undefined);
+      })
+      .catch(() => undefined);
   }, [userId]);
 
   /** Returns true only when both the file and the note were saved. */
   async function saveBlob(blob: Blob, filename: string, transcriptText?: string): Promise<boolean> {
     if (!userId) return false;
     setBusy(true);
+    setPhase("saving");
+    setStatusError("");
+    setSavedNote(null);
     const podId = target === PERSONAL ? null : target;
     const folder = podId ? `${podId}/${userId}` : userId;
     const path = `${folder}/${crypto.randomUUID()}-${filename}`;
     const { error: uploadError } = await supabase.storage.from("pod-audio").upload(path, blob);
     if (uploadError) {
       setBusy(false);
+      setPhase("error");
+      setStatusError("Couldn’t save audio. Try saving again before leaving this page.");
       toast.error(`Upload failed — your recording is kept on this device. ${uploadError.message}`);
       return false;
     }
-    const { data: inserted, error } = await supabase.from("notes").insert({
-      pod_id: podId,
-      created_by: userId,
-      title: title.trim() || `Recording ${new Date().toLocaleString()}`,
-      audio_url: path,
-      transcript: transcriptText?.trim() || null,
-    }).select("id").single();
-    setBusy(false);
+    const { data: inserted, error } = await supabase
+      .from("notes")
+      .insert({
+        pod_id: podId,
+        created_by: userId,
+        title: title.trim() || `Recording ${new Date().toLocaleString()}`,
+        audio_url: path,
+        transcript: transcriptText?.trim() || null,
+      })
+      .select("*")
+      .single();
     if (error) {
+      setBusy(false);
+      setPhase("error");
+      setStatusError(
+        "Couldn’t save the note. Retry from your recording backup or upload the file again.",
+      );
       await supabase.storage.from("pod-audio").remove([path]);
-      toast.error(`Could not save the note — your recording is kept on this device. ${error.message}`);
+      toast.error(
+        `Could not save the note — your recording is kept on this device. ${error.message}`,
+      );
       return false;
     }
     toast.success(podId ? "Saved to your pod" : "Saved to your personal library");
+    setSavedNote(inserted);
     setTitle("");
     transcriptRef.current = "";
     setLiveTranscript("");
-    await queryClient.invalidateQueries();
+    void queryClient.invalidateQueries();
     if (inserted && !transcriptText?.trim()) {
+      setPhase("processing");
       toast.info("Transcribing your recording…");
       runTranscribe({ data: { noteId: inserted.id, audioPath: path } })
-        .then(() => {
+        .then(({ transcript }) => {
+          setSavedNote({ ...inserted, transcript });
+          setPhase("ready");
           toast.success("Transcript ready");
-          return queryClient.invalidateQueries();
+          void queryClient.invalidateQueries();
         })
-        .catch((e: unknown) =>
-          toast.error(e instanceof Error ? e.message : "Transcription failed"),
-        );
+        .catch((e: unknown) => {
+          setPhase("error");
+          const message = e instanceof Error ? e.message : "Transcription failed";
+          setStatusError(`Audio saved. ${message} You can retry from your saved note.`);
+          toast.error("Audio saved; transcription couldn’t finish", { description: message });
+        })
+        .finally(() => setBusy(false));
+    } else {
+      setPhase("ready");
+      setBusy(false);
     }
     return true;
   }
@@ -199,7 +242,8 @@ export function AudioHub({
       let pending = "";
       let next = transcriptRef.current;
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i]!;
+        const result = event.results[i];
+        if (!result) continue;
         if (result.isFinal) {
           next = `${next}${next && !next.endsWith(" ") ? " " : ""}${result[0].transcript.trim()}`;
         } else {
@@ -241,13 +285,17 @@ export function AudioHub({
   }
 
   async function startRecording() {
-    if (!userId) return;
+    if (!userId || busy || recorderRef.current) return;
     if (atRecordingLimit) {
       toast.error(
         `Your ${plan.tier} plan allows ${plan.maxRecordings} saved recordings. Delete older recordings or upgrade to record more.`,
       );
       return;
     }
+    setBusy(true);
+    setPhase("starting");
+    setStatusError("");
+    setSavedNote(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia(RECORD_CONSTRAINTS);
       const mimeType = pickMimeType();
@@ -281,7 +329,7 @@ export function AudioHub({
           // Wait for the final slice to reach the on-device backup.
           await Promise.all(pendingWrites.current);
           const blob = await assembleSession(sessionId);
-          if (!blob) return;
+          if (!blob) throw new Error("No recording data available");
           const ok = await saveBlob(blob, "lecture.webm", transcriptRef.current);
           if (ok) {
             await clearSession(sessionId);
@@ -292,8 +340,12 @@ export function AudioHub({
           }
         } catch {
           setBusy(false);
+          setPhase("error");
+          setStatusError("Saving failed. Your recording backup has been kept — try Save it again.");
           setRecovered({ sessionId, size: 0 });
-          toast.error("Saving failed — your recording is kept on this device. Try “Save it” again.");
+          toast.error(
+            "Saving failed — your recording is kept on this device. Try “Save it” again.",
+          );
         }
       };
       // 5-second slices so an interruption loses at most a few seconds.
@@ -301,14 +353,22 @@ export function AudioHub({
       recorderRef.current = recorder;
       setElapsed(0);
       setRecording(true);
+      setPhase("idle");
+      setBusy(false);
       startRecognition();
     } catch {
+      setPhase("error");
+      setStatusError("Allow microphone access, then try recording again.");
+      setBusy(false);
       toast.error("Microphone access denied");
     }
   }
 
   function stopRecording() {
-    recorderRef.current?.stop();
+    if (!recorderRef.current) return;
+    setBusy(true);
+    setPhase("saving");
+    recorderRef.current.stop();
     recorderRef.current = null;
     setRecording(false);
   }
@@ -328,19 +388,25 @@ export function AudioHub({
   }
 
   return (
-    <Card className={`relative overflow-hidden transition-shadow duration-300 ${focus ? "rounded-none border-0 bg-transparent bg-none! shadow-none" : `border-brand-sky/25 bg-card shadow-card ${recording ? "recording-glow" : ""}`}`}>
+    <Card
+      className={`relative overflow-hidden transition-shadow duration-300 ${focus ? "rounded-none border-0 bg-transparent bg-none! shadow-none" : `border-brand-sky/25 bg-card shadow-card ${recording ? "recording-glow" : ""}`}`}
+    >
       <CardContent className={focus ? "flex flex-col gap-3 p-0" : "flex flex-col gap-5 p-5 sm:p-6"}>
         {focus && <AiAudioVisual recording={recording} />}
         <div className="flex flex-col gap-5">
-          <details className={`min-w-0 grow space-y-4 ${focus ? "order-2 text-left" : ""}`} open={focus ? undefined : true}>
-            <summary className={focus ? "mx-auto w-fit cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground" : "hidden"}>Recording options · {plan.tier} plan</summary>
+          <details className="order-2 min-w-0 grow space-y-4 text-left">
+            <summary className="mx-auto w-fit cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground">
+              Recording settings
+            </summary>
             <div className="flex items-center gap-2">
-              <span className={`icon-chip relative size-10 ${recording ? "mic-pulse" : ""}`}><Mic className="size-5" /></span>
+              <span className={`icon-chip relative size-10 ${recording ? "mic-pulse" : ""}`}>
+                <Mic className="size-5" />
+              </span>
               <h2 className="text-lg font-semibold tracking-normal">Lecture recording</h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Select value={target} onValueChange={setTarget}>
-                <SelectTrigger>
+                <SelectTrigger disabled={busy || recording} aria-label="Save recording to">
                   <SelectValue placeholder="Save to…" />
                 </SelectTrigger>
                 <SelectContent>
@@ -354,12 +420,14 @@ export function AudioHub({
               </Select>
               <Input
                 value={title}
+                disabled={busy || recording}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Recording title (optional)"
               />
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              {plan.tier} plan: up to {plan.maxRecordingMinutes >= 60
+              {plan.tier} plan: up to{" "}
+              {plan.maxRecordingMinutes >= 60
                 ? `${plan.maxRecordingMinutes / 60} hour${plan.maxRecordingMinutes > 60 ? "s" : ""}`
                 : `${plan.maxRecordingMinutes} minutes`}{" "}
               per recording ·{" "}
@@ -367,101 +435,190 @@ export function AudioHub({
                 ? "unlimited saved recordings"
                 : `${recordingsUsed} of ${plan.maxRecordings} recordings used`}
             </p>
-            {atRecordingLimit ? (
-              <p className="text-xs font-medium text-destructive">
-                You've reached your recording limit. Delete older recordings or{" "}
-                <Link to="/billing" className="underline">
-                  upgrade your plan
-                </Link>
-                .
-              </p>
-            ) : null}
-            {recovered && !recording ? (
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-xs">
-                <span>
-                  Unfinished recording found ({formatBytes(recovered.size)}) — it survived the
-                  interruption.
-                </span>
-                <Button size="sm" variant="secondary" onClick={() => void recoverSession()}>
-                  Save it
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    if (!window.confirm("Discard this recording permanently?")) return;
-                    void clearSession(recovered.sessionId);
-                    localStorage.removeItem(`transcript:${recovered.sessionId}`);
-                    updateTranscript("");
-                    setRecovered(null);
-                  }}
-                >
-                  Discard
-                </Button>
-              </div>
-            ) : null}
             <p className="text-xs leading-relaxed text-muted-foreground">{UPLOAD_HINT}</p>
           </details>
 
-          <div className={focus ? "flex flex-col items-center gap-3" : "flex shrink-0 flex-wrap items-center gap-3 border-t border-border pt-4"}>
-            {recording && (
-              <span className="flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive">
-                <span className="flex h-4 items-end gap-0.5" aria-hidden>
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <span key={i} className="eq-bar w-0.5 rounded-full bg-destructive" style={{ animationDelay: `${i * 120}ms` }} />
-                  ))}
-                </span>
-                {formatTimer(elapsed)}
-                <span className="text-xs font-normal">
-                  · {formatTimer(remaining)} left
-                </span>
-              </span>
-            )}
-            <Button
-              onClick={recording ? stopRecording : () => void startRecording()}
-              data-tour={focus ? "record-button" : undefined}
-              disabled={busy || (!recording && atRecordingLimit)}
-              variant={recording ? "destructive" : "default"}
-              className={focus ? `ai-record-button h-16 w-full max-w-72 gap-3 rounded-full px-8 text-base font-semibold ${recording ? "" : "bg-brand-gradient"}` : "h-10 gap-2 px-5"}
+          <div className="flex flex-col items-center gap-3">
+            <div
+              className="flex min-h-7 items-center justify-center gap-2 text-xs"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
             >
-              {recording ? <Square className="size-4" /> : <Mic className="size-4" />}
-              {busy ? "Saving recording…" : recording ? "Stop & save" : focus ? "Record with AI" : "Start recording"}
-            </Button>
-            <Button variant={focus ? "ghost" : "outline"} className={focus ? "h-8 gap-2 px-3 text-xs text-muted-foreground" : "h-10 gap-2 px-5"} disabled={busy} asChild>
-              <label className="cursor-pointer">
-                <Upload className="size-4" /> {focus ? "Upload audio instead" : "Upload"}
-                <input
-                  type="file"
-                  accept={UPLOAD_ACCEPT}
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = "";
-                    if (!file) return;
-                    const problem = validateUpload(file);
-                    if (problem) {
-                      toast.error(problem);
-                      return;
-                    }
-                    void saveBlob(file, file.name);
-                  }}
-                />
-              </label>
-            </Button>
+              {recording ? (
+                <span className="flex items-center gap-2 font-medium text-destructive">
+                  <span className="size-2 rounded-full bg-destructive motion-safe:animate-pulse" />
+                  Recording · {formatTimer(elapsed)}
+                  <span className="font-normal text-muted-foreground">
+                    · {formatTimer(remaining)} left
+                  </span>
+                </span>
+              ) : phase === "starting" ? (
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="size-3.5 motion-safe:animate-spin" />
+                  Connecting microphone…
+                </span>
+              ) : phase === "saving" ? (
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="size-3.5 motion-safe:animate-spin" />
+                  Saving audio securely…
+                </span>
+              ) : phase === "processing" ? (
+                <span className="flex items-center gap-2 text-brand-sky">
+                  <Loader2 className="size-3.5 motion-safe:animate-spin" />
+                  Processing · Audio saved
+                </span>
+              ) : phase === "ready" ? (
+                <span className="flex items-center gap-2 font-medium text-brand-teal">
+                  <Check className="size-3.5" />
+                  Transcript Ready · Saved
+                </span>
+              ) : phase !== "error" ? (
+                <span className="text-muted-foreground">
+                  {target === PERSONAL
+                    ? "Private · Saved to your library"
+                    : "Shared · Saved to your pod"}
+                </span>
+              ) : null}
+            </div>
+            <div
+              className="flex w-full max-w-80 items-stretch gap-1"
+              role="group"
+              aria-label="Record or upload audio"
+            >
+              <Button
+                onClick={recording ? stopRecording : () => void startRecording()}
+                data-tour={focus ? "record-button" : undefined}
+                disabled={busy || (!recording && atRecordingLimit)}
+                variant={recording ? "destructive" : "default"}
+                className={`ai-record-button h-16 min-w-0 flex-1 gap-3 rounded-full px-5 text-base font-semibold ${recording ? "" : "bg-brand-gradient"}`}
+              >
+                {busy ? (
+                  <Loader2 className="size-5 shrink-0 motion-safe:animate-spin" />
+                ) : recording ? (
+                  <Square className="size-5 shrink-0" />
+                ) : (
+                  <Mic className="size-5 shrink-0" />
+                )}
+                {phase === "starting"
+                  ? "Connecting…"
+                  : phase === "saving"
+                    ? "Saving…"
+                    : phase === "processing"
+                      ? "Processing…"
+                      : recording
+                        ? "Stop & save"
+                        : "Record with AI"}
+              </Button>
+              {!recording && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      disabled={busy}
+                      className="h-16 w-14 shrink-0 rounded-full bg-brand-gradient px-0"
+                      aria-label="Audio options"
+                      title="Record or upload audio"
+                    >
+                      <ChevronDown className="size-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem
+                      disabled={atRecordingLimit}
+                      onSelect={() => void startRecording()}
+                    >
+                      <Mic />
+                      Record lecture
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => uploadRef.current?.click()}>
+                      <Upload />
+                      Upload audio or resource
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+            <input
+              ref={uploadRef}
+              type="file"
+              accept={UPLOAD_ACCEPT}
+              aria-label="Upload audio or resource"
+              className="hidden"
+              disabled={busy || recording}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (!file || busy || recording) return;
+                const problem = validateUpload(file);
+                if (problem) {
+                  toast.error(problem);
+                  return;
+                }
+                void saveBlob(file, file.name);
+              }}
+            />
+            {phase === "error" && (
+              <p role="alert" className="max-w-md text-center text-xs leading-5 text-destructive">
+                {statusError}
+              </p>
+            )}
+            {savedNote && (phase === "ready" || phase === "error") && (
+              <Button variant="secondary" size="sm" onClick={() => setViewerOpen(true)}>
+                {phase === "ready" ? "Open transcript" : "Open saved note"}
+              </Button>
+            )}
           </div>
         </div>
 
-        {focus && recovered && !recording && <div className="flex flex-wrap items-center justify-center gap-2 text-sm"><span>Unfinished recording found</span><Button size="sm" variant="secondary" onClick={() => void recoverSession()} disabled={busy}>Save it</Button></div>}
+        {atRecordingLimit ? (
+          <p className="text-xs font-medium text-destructive">
+            You've reached your recording limit. Delete older recordings or{" "}
+            <Link to="/billing" className="underline">
+              upgrade your plan
+            </Link>
+            .
+          </p>
+        ) : null}
+        {recovered && !recording ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-xs">
+            <span>
+              Unfinished recording found ({formatBytes(recovered.size)}) — it survived the
+              interruption.
+            </span>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={busy}
+              onClick={() => void recoverSession()}
+            >
+              Save it
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => {
+                if (!window.confirm("Discard this recording permanently?")) return;
+                void clearSession(recovered.sessionId);
+                localStorage.removeItem(`transcript:${recovered.sessionId}`);
+                updateTranscript("");
+                setRecovered(null);
+              }}
+            >
+              Discard
+            </Button>
+          </div>
+        ) : null}
 
         {(recording || liveTranscript) && (
-          <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground">
-              Live transcript — edit any mistakes before saving
-            </p>
+          <details className="space-y-2 text-left">
+            <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+              Live transcript
+            </summary>
             <Textarea
               value={liveTranscript}
               onChange={(e) => updateTranscript(e.target.value)}
-              rows={5}
+              rows={3}
               placeholder={
                 recording
                   ? "Listening… your words will appear here as you speak."
@@ -469,11 +626,14 @@ export function AudioHub({
               }
               className="bg-background"
             />
-            {interim ? (
-              <p className="text-sm italic text-muted-foreground">{interim}…</p>
-            ) : null}
-          </div>
+            {interim ? <p className="text-sm italic text-muted-foreground">{interim}…</p> : null}
+          </details>
         )}
+        <NoteViewer
+          note={viewerOpen ? savedNote : null}
+          userId={userId}
+          onOpenChange={setViewerOpen}
+        />
       </CardContent>
     </Card>
   );

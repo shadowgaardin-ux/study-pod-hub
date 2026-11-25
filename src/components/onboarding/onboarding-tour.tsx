@@ -250,7 +250,7 @@ function TutorialVideoDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         </DialogHeader>
         {TUTORIAL_VIDEO_URL ? (
           <div className="aspect-video overflow-hidden rounded-xl border border-border bg-muted">
-            <iframe src={TUTORIAL_VIDEO_URL} title="Study Pods Hub tutorial" className="size-full" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
+            <iframe src={TUTORIAL_VIDEO_URL} title="Study Notes tutorial" className="size-full" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
           </div>
         ) : null}
       </DialogContent>

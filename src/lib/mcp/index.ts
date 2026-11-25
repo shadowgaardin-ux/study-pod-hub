@@ -12,7 +12,7 @@ const projectRef = import.meta.env['VITE_SUPABASE_PROJECT_ID'] ?? "project-ref-u
 
 export default defineMcp({
   name: "study-pods-hub",
-  title: "Study Pods Hub",
+  title: "Study Notes",
   version: "0.1.0",
   instructions:
     "Tools for Study Notes, a collaborative study workspace. Use `list_pods` to see the user's study pods, `list_notes` and `search_notes` to read their notes, recordings and transcripts, `create_note` to save new notes (personal library by default), and `list_flashcards` / `create_flashcards` to work with revision decks.",

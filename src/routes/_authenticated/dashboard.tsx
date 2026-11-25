@@ -22,9 +22,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Dashboard — Study Pods Hub" },
+      { title: "Dashboard — Study Notes" },
       { name: "description", content: "Record lectures, revisit your notes and study together in your pods." },
-      { property: "og:title", content: "Dashboard — Study Pods Hub" },
+      { property: "og:title", content: "Dashboard — Study Notes" },
       { property: "og:description", content: "Record lectures, revisit your notes and study together in your pods." },
     ],
   }),
@@ -52,7 +52,7 @@ function DashboardPage() {
         <section className="mx-auto flex max-w-2xl flex-col items-center text-center">
           <p className="mb-3 text-xs text-muted-foreground sm:mb-5">Welcome back, {firstName}</p>
           <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase text-brand-sky"><Sparkles className="size-3.5" />Your AI study space</p>
-          <h1 data-tour="dashboard-hero" className="text-3xl leading-tight font-bold sm:text-4xl">Study Pods Hub</h1>
+          <h1 data-tour="dashboard-hero" className="text-3xl leading-tight font-bold sm:text-4xl">Study Notes</h1>
           <p className="mt-3 text-lg font-medium text-foreground">Less note-taking. More understanding.</p>
           <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">Record your lectures and turn them into transcripts, summaries, bullet points, flashcards and quizzes with AI.</p>
           <div id="recording" className="mt-2 w-full scroll-mt-28">

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import logoUrl from "@/assets/study-notes-hub-logo-compact.png";
+import { StudyNotesBrand } from "@/components/study-notes-brand";
 
 import { GoogleButton } from "@/components/google-button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -199,11 +199,7 @@ function AuthPage() {
       <main className="flex flex-1 items-start justify-center px-5 pt-6 pb-16">
         <div className="w-full max-w-md">
           <div className="mb-8 flex flex-col items-center text-center">
-            <img
-              src={logoUrl}
-              alt="Study Notes Hub"
-              className="logo-glow h-14 w-auto dark:rounded-lg dark:bg-logo-surface dark:ring-1 dark:ring-ai/30 dark:px-3 dark:py-2"
-            />
+            <StudyNotesBrand />
             <p className="mt-3 text-sm text-muted-foreground">
               One shared workspace for your course group.
             </p>
