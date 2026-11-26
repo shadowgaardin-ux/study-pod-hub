@@ -50,6 +50,13 @@
       "when": 1795120093042,
       "tag": "0006_payment_activation_proof",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795659249848,
+      "tag": "0007_add_note_course_organization",
+      "breakpoints": true
     }
   ]
 }

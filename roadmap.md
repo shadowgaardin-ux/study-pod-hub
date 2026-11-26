@@ -1,3 +1,7 @@
+# Course and semester organization
+- [ ] Add optional semester/course labels to notes and recording saves without changing transcription or existing recordings.
+- [ ] Group Personal Library notes by semester and course, support label editing, and verify saving, legacy notes, mobile/desktop and tests.
+
 # App-wide premium AI style
 # Recording flow and Study Notes naming
 - [ ] Standardize the app name and simplify the recording/upload entry with collapsed settings and smaller audio artwork.

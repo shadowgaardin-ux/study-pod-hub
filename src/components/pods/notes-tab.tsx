@@ -42,6 +42,8 @@ export interface Note {
   audio_url: string | null;
   transcript: string | null;
   summary: string | null;
+  semester: string | null;
+  course: string | null;
   created_at: string;
 }
 

@@ -142,30 +142,36 @@ export type Database = {
       notes: {
         Row: {
           audio_url: string | null
+          course: string | null
           created_at: string
           created_by: string
           id: string
           pod_id: string | null
+          semester: string | null
           summary: string | null
           title: string
           transcript: string | null
         }
         Insert: {
           audio_url?: string | null
+          course?: string | null
           created_at?: string
           created_by: string
           id?: string
           pod_id?: string | null
+          semester?: string | null
           summary?: string | null
           title: string
           transcript?: string | null
         }
         Update: {
           audio_url?: string | null
+          course?: string | null
           created_at?: string
           created_by?: string
           id?: string
           pod_id?: string | null
+          semester?: string | null
           summary?: string | null
           title?: string
           transcript?: string | null

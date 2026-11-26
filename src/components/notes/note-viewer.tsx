@@ -13,8 +13,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { CourseOrganizationFields } from "@/components/notes/course-organization-fields";
 import { supabase } from "@/integrations/supabase/client";
 import { studyAction } from "@/lib/ai.functions";
+import { cleanOrganizationLabel } from "@/lib/course-organization";
 import { exportNoteTxt } from "@/lib/export-note";
 import { transcribeNote } from "@/lib/transcribe.functions";
 
@@ -24,6 +26,8 @@ export interface ViewableNote {
   audio_url: string | null;
   transcript: string | null;
   summary: string | null;
+  semester: string | null;
+  course: string | null;
   created_at: string;
   created_by: string;
 }
@@ -41,16 +45,24 @@ export function NoteViewer({
   note,
   userId,
   onOpenChange,
+  semesters = [],
+  courses = [],
 }: {
   note: ViewableNote | null;
   userId: string | undefined;
   onOpenChange: (open: boolean) => void;
+  semesters?: string[];
+  courses?: string[];
 }) {
   const queryClient = useQueryClient();
   const runTranscribe = useServerFn(transcribeNote);
   const runAi = useServerFn(studyAction);
   const [text, setText] = useState("");
   const [savedText, setSavedText] = useState("");
+  const [semester, setSemester] = useState("");
+  const [course, setCourse] = useState("");
+  const [savedSemester, setSavedSemester] = useState<string | null>(null);
+  const [savedCourse, setSavedCourse] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
@@ -66,6 +78,10 @@ export function NoteViewer({
   useEffect(() => {
     setText(note?.transcript ?? "");
     setSavedText(note?.transcript ?? "");
+    setSemester(note?.semester ?? "");
+    setCourse(note?.course ?? "");
+    setSavedSemester(note?.semester ?? null);
+    setSavedCourse(note?.course ?? null);
     setResults([]);
     setAction(null);
     setAudioUrl(null);
@@ -87,9 +103,15 @@ export function NoteViewer({
   async function save() {
     if (!note) return;
     setSaving(true);
+    const nextSemester = cleanOrganizationLabel(semester);
+    const nextCourse = cleanOrganizationLabel(course);
     const { error } = await supabase
       .from("notes")
-      .update({ transcript: text.trim() || null })
+      .update({
+        transcript: text.trim() || null,
+        semester: nextSemester,
+        course: nextCourse,
+      })
       .eq("id", note.id);
     setSaving(false);
     if (error) {
@@ -97,7 +119,11 @@ export function NoteViewer({
       return;
     }
     setSavedText(text);
-    toast.success("Transcript saved");
+    setSemester(nextSemester ?? "");
+    setCourse(nextCourse ?? "");
+    setSavedSemester(nextSemester);
+    setSavedCourse(nextCourse);
+    toast.success("Note changes saved");
     await queryClient.invalidateQueries();
   }
 
@@ -133,7 +159,10 @@ export function NoteViewer({
     }
   }
 
-  const dirty = text !== savedText;
+  const dirty =
+    text !== savedText ||
+    cleanOrganizationLabel(semester) !== savedSemester ||
+    cleanOrganizationLabel(course) !== savedCourse;
 
   return (
     <Sheet open={note !== null} onOpenChange={onOpenChange}>
@@ -146,6 +175,24 @@ export function NoteViewer({
         </SheetHeader>
 
         <div className="space-y-5 px-4 pb-8">
+          {canEdit ? (
+            <div className="border-b border-border pb-5">
+              <CourseOrganizationFields
+                semester={semester}
+                course={course}
+                semesters={semesters}
+                courses={courses}
+                disabled={saving}
+                onSemesterChange={setSemester}
+                onCourseChange={setCourse}
+              />
+            </div>
+          ) : note?.semester || note?.course ? (
+            <p className="text-sm text-muted-foreground">
+              {[note.semester, note.course].filter(Boolean).join(" · ")}
+            </p>
+          ) : null}
+
           {isAudio ? (
             audioUrl ? (
               // eslint-disable-next-line jsx-a11y/media-has-caption
@@ -200,7 +247,11 @@ export function NoteViewer({
                   disabled={!dirty || saving}
                   onClick={() => void save()}
                 >
-                  {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+                  {saving ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Save className="size-3.5" />
+                  )}
                   Save changes
                 </Button>
               ) : null}

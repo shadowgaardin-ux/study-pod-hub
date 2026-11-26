@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NoteViewer, type ViewableNote } from "@/components/notes/note-viewer";
+import { CourseOrganizationFields } from "@/components/notes/course-organization-fields";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -42,6 +43,8 @@ import {
   validateUpload,
 } from "@/lib/audio";
 import { useUsage, type PodWithCount } from "@/lib/queries";
+import { usePersonalNotes } from "@/lib/library";
+import { cleanOrganizationLabel, organizationSuggestions } from "@/lib/course-organization";
 import { UNLIMITED, planFor } from "@/lib/tiers";
 
 const PERSONAL = "personal";
@@ -81,8 +84,13 @@ export function AudioHub({
   const { profile } = useAuth();
   const plan = planFor(profile?.tier);
   const usage = useUsage(userId);
+  const personalNotes = usePersonalNotes(userId);
+  const semesterOptions = organizationSuggestions(personalNotes.data ?? [], "semester");
+  const courseOptions = organizationSuggestions(personalNotes.data ?? [], "course");
   const [target, setTarget] = useState<string>(PERSONAL);
   const [title, setTitle] = useState("");
+  const [semester, setSemester] = useState("");
+  const [course, setCourse] = useState("");
   const [liveTranscript, setLiveTranscript] = useState("");
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -183,6 +191,8 @@ export function AudioHub({
         title: title.trim() || `Recording ${new Date().toLocaleString()}`,
         audio_url: path,
         transcript: transcriptText?.trim() || null,
+        semester: cleanOrganizationLabel(semester),
+        course: cleanOrganizationLabel(course),
       })
       .select("*")
       .single();
@@ -425,6 +435,15 @@ export function AudioHub({
                 placeholder="Recording title (optional)"
               />
             </div>
+            <CourseOrganizationFields
+              semester={semester}
+              course={course}
+              semesters={semesterOptions}
+              courses={courseOptions}
+              disabled={busy || recording}
+              onSemesterChange={setSemester}
+              onCourseChange={setCourse}
+            />
             <p className="text-xs leading-relaxed text-muted-foreground">
               {plan.tier} plan: up to{" "}
               {plan.maxRecordingMinutes >= 60
@@ -632,6 +651,8 @@ export function AudioHub({
         <NoteViewer
           note={viewerOpen ? savedNote : null}
           userId={userId}
+          semesters={semesterOptions}
+          courses={courseOptions}
           onOpenChange={setViewerOpen}
         />
       </CardContent>
