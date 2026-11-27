@@ -13,6 +13,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { AskMyNotes } from "@/components/notes/ask-my-notes";
 import { CourseOrganizationFields } from "@/components/notes/course-organization-fields";
 import { supabase } from "@/integrations/supabase/client";
 import { studyAction } from "@/lib/ai.functions";
@@ -271,6 +272,13 @@ export function NoteViewer({
             <div className="space-y-1">
               <h3 className="text-sm font-medium">Summary</h3>
               <p className="text-sm text-muted-foreground">{note.summary}</p>
+            </div>
+          ) : null}
+
+          {note ? (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium">Ask My Notes</h3>
+              <AskMyNotes key={note.id} scope={{ noteId: note.id }} label="Ask a question about this lecture" />
             </div>
           ) : null}
 

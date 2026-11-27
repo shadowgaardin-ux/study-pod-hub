@@ -16,6 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/hooks/use-auth";
+import { AskMyNotes } from "@/components/notes/ask-my-notes";
 import { groupNotesBySemester, organizationSuggestions } from "@/lib/course-organization";
 import { exportNotePdf, exportNoteTxt } from "@/lib/export-note";
 import { planFor } from "@/lib/tiers";
@@ -219,6 +220,10 @@ export function PersonalLibrary({
                         {courseGroup.notes.length === 1 ? "lecture" : "lectures"}
                       </span>
                     </div>
+                    <AskMyNotes
+                      scope={{ course: courseGroup.course, semester: semesterGroup.semester }}
+                      label={`Ask My Notes about ${courseGroup.course ?? "these notes"}`}
+                    />
                     <div className="stagger grid gap-3 min-[640px]:grid-cols-2">
                       {courseGroup.notes.map(renderNote)}
                     </div>

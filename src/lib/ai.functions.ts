@@ -71,3 +71,41 @@ export const generatePodQuiz = createServerFn({ method: "POST" })
     if (!questions.length) throw new Error("The AI didn't return a quiz — try again.");
     return { questions };
   });
+
+export interface AskNotesSource { ref: string; noteId: string; noteTitle: string; excerpt: string }
+
+export const askMyNotes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        question: z.string().trim().min(2).max(1000),
+        noteId: z.string().uuid().optional(),
+        course: z.string().max(120).nullable().optional(),
+        semester: z.string().max(120).nullable().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { buildSections, pickSources } = await import("./ask-notes");
+    let q = context.supabase.from("notes").select("id, title, transcript, summary");
+    if (data.noteId) q = q.eq("id", data.noteId);
+    else {
+      q = q.eq("created_by", context.userId);
+      q = data.course ? q.eq("course", data.course) : q.is("course", null);
+      q = data.semester ? q.eq("semester", data.semester) : q.is("semester", null);
+    }
+    const { data: notes, error } = await q.order("created_at", { ascending: false }).limit(30);
+    if (error) throw new Error("Couldn't load your notes — please try again.");
+    const sections = buildSections(notes ?? []);
+    if (!sections.length) throw new Error("There's no transcript or summary to search yet. Transcribe a lecture first.");
+    const out = (await askJson(
+      `Answer the student's question using ONLY the note sections below. If the sections don't contain the answer, say so plainly and do not use outside knowledge. Keep the answer short and clear. Cite the refs of the sections you used.\nJSON: {"answer": string, "sources": string[]}\n\nQuestion: ${data.question}\n\nSections:\n${sections.map((s) => `[${s.ref}] (${s.noteTitle}) ${s.text}`).join("\n")}`,
+    )) as { answer?: unknown; sources?: unknown };
+    const answer = typeof out.answer === "string" ? out.answer.trim() : "";
+    if (!answer) throw new Error("The AI didn't return an answer — try again.");
+    const sources: AskNotesSource[] = pickSources(sections, out.sources).map((s) => ({
+      ref: s.ref, noteId: s.noteId, noteTitle: s.noteTitle, excerpt: s.text.slice(0, 320),
+    }));
+    return { answer, sources };
+  });
