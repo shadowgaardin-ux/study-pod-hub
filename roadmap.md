@@ -1,4 +1,7 @@
 # Course and semester organization
+- [ ] Add lecture/course flashcard and mixed quiz generation with saved scope, review, ratings and regeneration.
+- [ ] Add owner-controlled public note links with view-only/edit permissions and revocation; verify anonymous access boundaries.
+- [ ] Add Word export and lecture/course export menus while preserving TXT/PDF; verify downloads and relevant tests.
 - [x] Add optional semester/course labels to notes and recording saves without changing transcription or existing recordings.
 - [x] Group Personal Library notes by semester and course, support label editing, and verify saving, legacy notes, mobile/desktop and tests.
 

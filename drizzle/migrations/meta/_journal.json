@@ -57,6 +57,13 @@
       "when": 1795659249848,
       "tag": "0007_add_note_course_organization",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795845671965,
+      "tag": "0008_note_sharing_and_scoped_study",
+      "breakpoints": true
     }
   ]
 }

@@ -12,8 +12,10 @@ export function exportNoteTxt(note: { title: string; transcript: string | null; 
   const a = document.createElement("a");
   a.href = url;
   a.download = `${note.title.replace(/[^\w\- ]+/g, "").trim() || "note"}.txt`;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
 /** Open a printable view of the note so the user can save it as PDF. */
@@ -34,4 +36,34 @@ ${note.summary ? `<h2>Summary</h2><pre>${esc(note.summary)}</pre>` : ""}
   win.document.close();
   win.focus();
   win.print();
+}
+
+export type ExportableNote = { title: string; transcript: string | null; summary: string | null; created_at: string; semester?: string | null; course?: string | null };
+
+/** Build a genuine Office Open XML document, rather than renaming HTML. */
+export async function exportNotesDocx(notes: ExportableNote[], title: string) {
+  const { Document, HeadingLevel, Packer, Paragraph, TextRun } = await import("docx");
+  const paragraphs = notes.flatMap((n) => [
+    new Paragraph({ text: n.title, heading: HeadingLevel.HEADING_1 }),
+    new Paragraph({ children: [new TextRun({ text: [n.semester, n.course, new Date(n.created_at).toLocaleDateString()].filter(Boolean).join(" · "), italics: true })] }),
+    ...(n.summary ? [new Paragraph({ text: "Summary", heading: HeadingLevel.HEADING_2 }), ...n.summary.split("\n").map((text) => new Paragraph({ text }))] : []),
+    new Paragraph({ text: "Lecture notes", heading: HeadingLevel.HEADING_2 }),
+    ...(n.transcript ?? "").split("\n").map((text) => new Paragraph({ text })),
+  ]);
+  const blob = await Packer.toBlob(new Document({ sections: [{ children: paragraphs }] }));
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${title.replace(/[^\w\- ]+/g, "").trim() || "notes"}.docx`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
+export function combineCourseNotes(notes: ExportableNote[], title: string): ExportableNote {
+  return {
+    title,
+    created_at: notes[0]?.created_at ?? new Date().toISOString(),
+    transcript: notes.map((n) => [n.title, [n.semester, n.course].filter(Boolean).join(" · "), n.transcript, n.summary ? `Summary\n${n.summary}` : null].filter(Boolean).join("\n\n")).join("\n\n──────────\n\n"),
+    summary: null,
+  };
 }

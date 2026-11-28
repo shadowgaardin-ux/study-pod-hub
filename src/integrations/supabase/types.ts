@@ -97,30 +97,42 @@ export type Database = {
       flashcards: {
         Row: {
           back: string
+          course: string | null
           created_at: string
           created_by: string
           deck_name: string
           front: string
           id: string
+          note_id: string | null
           pod_id: string | null
+          semester: string | null
+          source_note_ids: string[]
         }
         Insert: {
           back: string
+          course?: string | null
           created_at?: string
           created_by: string
           deck_name: string
           front: string
           id?: string
+          note_id?: string | null
           pod_id?: string | null
+          semester?: string | null
+          source_note_ids?: string[]
         }
         Update: {
           back?: string
+          course?: string | null
           created_at?: string
           created_by?: string
           deck_name?: string
           front?: string
           id?: string
+          note_id?: string | null
           pod_id?: string | null
+          semester?: string | null
+          source_note_ids?: string[]
         }
         Relationships: [
           {
@@ -131,10 +143,56 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "flashcards_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "flashcards_pod_id_fkey"
             columns: ["pod_id"]
             isOneToOne: false
             referencedRelation: "pods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_shares: {
+        Row: {
+          can_edit: boolean
+          created_at: string
+          note_id: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          can_edit?: boolean
+          created_at?: string
+          note_id: string
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          can_edit?: boolean
+          created_at?: string
+          note_id?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_shares_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: true
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_shares_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -444,6 +502,60 @@ export type Database = {
           },
         ]
       }
+      practice_quizzes: {
+        Row: {
+          course: string | null
+          created_at: string
+          id: string
+          note_id: string | null
+          picks: Json
+          questions: Json
+          ratings: Json
+          semester: string | null
+          source_note_ids: string[]
+          user_id: string
+        }
+        Insert: {
+          course?: string | null
+          created_at?: string
+          id?: string
+          note_id?: string | null
+          picks?: Json
+          questions?: Json
+          ratings?: Json
+          semester?: string | null
+          source_note_ids?: string[]
+          user_id: string
+        }
+        Update: {
+          course?: string | null
+          created_at?: string
+          id?: string
+          note_id?: string | null
+          picks?: Json
+          questions?: Json
+          ratings?: Json
+          semester?: string | null
+          source_note_ids?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_quizzes_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_quizzes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -491,6 +603,10 @@ export type Database = {
       }
       can_read_note_file: { Args: { _path: string }; Returns: boolean }
       can_request_pod: { Args: { _pod_id: string }; Returns: boolean }
+      create_note_share: {
+        Args: { _can_edit: boolean; _note_id: string; _token: string }
+        Returns: undefined
+      }
       discover_pods: {
         Args: { _search?: string }
         Returns: {
@@ -503,6 +619,16 @@ export type Database = {
           name: string
           request_status: string
         }[]
+      }
+      edit_shared_note: {
+        Args: {
+          _summary: string
+          _title: string
+          _token: string
+          _transcript: string
+          _version: string
+        }
+        Returns: undefined
       }
       is_pod_admin: {
         Args: { _pod_id: string; _user_id: string }
@@ -532,6 +658,19 @@ export type Database = {
           joined_at: string
           role: string
           user_id: string
+        }[]
+      }
+      read_shared_note: {
+        Args: { _token: string }
+        Returns: {
+          can_edit: boolean
+          course: string
+          created_at: string
+          semester: string
+          summary: string
+          title: string
+          transcript: string
+          version: string
         }[]
       }
       request_pod_access: {
